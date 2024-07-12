@@ -9,7 +9,8 @@ bool begins_with(const std::string &s, const std::string &token) {
   return std::regex_search(s, regex_pattern);
 }
 
-std::vector<std::string> split_(const std::string &s, const std::string& token) {
+std::vector<std::string> split_(const std::string &s,
+                                const std::string &token) {
   auto tokens = std::vector<std::string>{};
   auto regex_pattern = std::regex{token};
   auto iter = std::sregex_token_iterator{

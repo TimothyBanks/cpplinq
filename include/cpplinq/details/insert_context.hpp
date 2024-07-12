@@ -4,7 +4,7 @@
 
 namespace cpplinq::details::insert_context {
 
-bool is_this_statement(const std::string& sql);
-cursor execute(const std::string& sql);
+bool is_this_statement(const std::string &sql);
+cursor execute(const std::string &sql);
 
-}
+} // namespace cpplinq::details::insert_context

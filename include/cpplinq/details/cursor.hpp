@@ -6,8 +6,8 @@
 namespace cpplinq::details {
 
 struct cursor {
-    std::vector<column> columns;
-    std::vector<std::vector<std::any>> results;
+  std::vector<column> columns;
+  std::vector<std::vector<std::any>> results;
 };
 
-}
+} // namespace cpplinq::details

@@ -7,23 +7,23 @@
 
 namespace cpplinq::sql_context {
 
-cpplinq::details::cursor execute(const std::string& sql) {
-    if (details::call_context::is_this_statement(sql)) {
-        return details::call_context::execute(sql);
-    }
-    if (details::delete_context::is_this_statement(sql)) {
-        return details::delete_context::execute(sql);
-    }
-    if (details::insert_context::is_this_statement(sql)) {
-        return details::insert_context::execute(sql);
-    }
-    if (details::select_context::is_this_statement(sql)) {
-        return details::select_context::execute(sql);
-    }
-    if (details::update_context::is_this_statement(sql)) {
-        return details::update_context::execute(sql);
-    }
-    return {};
+cpplinq::details::cursor execute(const std::string &sql) {
+  if (details::call_context::is_this_statement(sql)) {
+    return details::call_context::execute(sql);
+  }
+  if (details::delete_context::is_this_statement(sql)) {
+    return details::delete_context::execute(sql);
+  }
+  if (details::insert_context::is_this_statement(sql)) {
+    return details::insert_context::execute(sql);
+  }
+  if (details::select_context::is_this_statement(sql)) {
+    return details::select_context::execute(sql);
+  }
+  if (details::update_context::is_this_statement(sql)) {
+    return details::update_context::execute(sql);
+  }
+  return {};
 }
 
-}
+} // namespace cpplinq::sql_context

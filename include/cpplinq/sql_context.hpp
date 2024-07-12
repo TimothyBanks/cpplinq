@@ -4,6 +4,6 @@
 
 namespace cpplinq::sql_context {
 
-cpplinq::details::cursor execute(const std::string& sql);
+cpplinq::details::cursor execute(const std::string &sql);
 
 }
