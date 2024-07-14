@@ -34,6 +34,6 @@ add_library(cpplinq STATIC
     src/sum.cpp 
     src/table.cpp 
     src/update_context.cpp 
-    src/where_tree.cpp)
+    src/expression_tree.cpp)
 
 target_include_directories(cpplinq PUBLIC ./include)

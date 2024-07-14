@@ -1,5 +1,9 @@
+#include <cpplinq/details/column.hpp>
 #include <cpplinq/details/regex.hpp>
 #include <cpplinq/details/select_context.hpp>
+#include <cpplinq/details/string.hpp>
+#include <cpplinq/details/table.hpp>
+#include <cpplinq/details/unsupported.hpp>
 
 namespace cpplinq::details::select_context {
 
@@ -7,6 +11,90 @@ bool is_this_statement(const std::string &sql) {
   return cpplinq::regex::begins_with(sql, "SELECT ");
 }
 
-cursor execute(const std::string &sql) { return {}; }
+cursor execute(const std::string &sql) {
+  /***************************
+  General format of a SELECT statement in PostgreSQL:
+  SELECT DISTINCT column1, column2, ...
+  FROM table_name
+  JOIN other_table ON table_name.column = other_table.column
+  WHERE condition
+  GROUP BY column1, column2, ...
+  HAVING condition
+  ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...
+  LIMIT number OFFSET number;
+  ****************************/
+
+  // While it would be much better to use a lexer and parser such as boost
+  // spirit, for now we tokenize the string by starting from the OFFSET keyword
+  // and popping off the last part of the statement.
+  auto tokens = regex::split(sql, " OFFSET ");
+  auto offset = size_t{0};
+  if (tokens.size() > 1) {
+    offset = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+  }
+
+  tokens = regex::split(tokens.front(), " LIMIT ");
+  auto limit = size_t{0};
+  if (tokens.size() > 1) {
+    limit = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+  }
+
+  check_unsupported_token(tokens.front(), " ORDER BY ");
+  check_unsupported_token(tokens.front(), " HAVING ");
+  check_unsupported_token(tokens.front(), " GROUP BY ");
+
+  tokens = regex::split(tokens.front(), " WHERE ");
+  if (tokens.size() > 1) {
+    // Build the expression tree from the conditionals in the WHERE
+  }
+
+  check_unsupported_token(tokens.front(), " JOIN ");
+
+  tokens = regex::split(tokens.front(), " FROM ");
+  auto t = table{};
+  auto table_alias = std::string{};
+  if (tokens.size() > 1) {
+    auto subtokens = regex::split(tokens.back(), " AS ");
+    t.name = cpplinq::details::string::trim(subtokens.front());
+    t.alias = subtokens.size() > 1
+                  ? cpplinq::details::string::trim(subtokens.back())
+                  : std::string{};
+  }
+
+  check_unsupported_token(tokens.front(), " DISTINCT ");
+
+  tokens = regex::split(tokens.front(), "SELECT ");
+  auto column_tokens = regex::split(tokens.back(), ',');
+  auto columns = std::vector<column>{};
+  for (auto &c : column_tokens) {
+    auto subtokens = regex::split(c, " AS ");
+
+    columns.emplace_back();
+    auto &new_column = columns.back();
+
+    // TODO:  If JOIN becomes supported, will need to parse table.column_name in
+    // SELECT.
+    new_column.table = t.alias.empty() ? t.name : t.alias;
+    new_column.alias = subtokens.size() > 1
+                           ? cpplinq::details::string::trim(subtokens.back())
+                           : std::string{};
+
+    auto column_token = subtokens.front();
+    subtokens = regex::split(column_token, '(');
+    if (subtokens.size() > 1) {
+      // This is an aggregate function.
+      new_column.aggregate = subtokens.front();
+      subtokens = regex::split(subtokens.back(), ')');
+      new_column.name =
+          subtokens.front().empty() ? new_column.alias : subtokens.front();
+    } else {
+      new_column.name = cpplinq::details::string::trim(column_token);
+    }
+  }
+
+  // Execute the statement.
+
+  return {};
+}
 
 } // namespace cpplinq::details::select_context
