@@ -8,14 +8,32 @@
 
 namespace cpplinq::details::traits {
 
-// template <typename Table_trait>
-// cpplinq::details::cursor execute(const select_context &context) {
-//   auto &primary_index = Table_trait::table_type::instance().primary_index();
+template <typename Table_trait>
+cpplinq::details::cursor execute(const select_context& context) {
+  // TODO:  Add in the RANGE clause so the user can specify which index.
+  // Currently this will iterate the entire table.
+  auto& primary_index = Table_trait::table_type::instance().primary_index();
 
-//   for (auto it = std::begin(primary_index); it != std::end(primary_index);
-//        ++it) {
-//   }
-// }
+  auto cursor = cpplinq::details::cursor{};
+  cursor.columns = context.columns;
+
+  for (auto it = std::begin(primary_index); it != std::end(primary_index);
+       ++it) {
+    auto& value = *it;
+    // TODO:  Aliases for columns need to be factored in during evaluation.
+    if (!Table_trait::evaluate(value, context.et)) {
+      continue;
+    }
+
+    cursor.results.emplace_back();
+    auto& row = cursor.results.back();
+    for (const auto& column : context.columns) {
+      row.emplace_back(Table_trait::column_value(column.name, value));
+    }
+  }
+
+  return cursor;
+}
 
 struct any_table {
  public:

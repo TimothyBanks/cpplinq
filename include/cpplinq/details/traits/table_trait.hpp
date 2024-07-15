@@ -127,6 +127,13 @@
     static void invoke(const std::string& column_name, Functor f) {            \
       BOOST_PP_SEQ_FOR_EACH(GENERATE_INVOKE_BLOCK, __table_name__, __columns)  \
     }                                                                          \
+    static std::any column_value(const std::string& column_name,               \
+                                 const record_type& record) {                  \
+      auto result = std::any{};                                                \
+      invoke(column_name,                                                      \
+             [&](const auto& trait) { result = trait.value(record); });        \
+      return result;                                                           \
+    }                                                                          \
     static std::any from_string(const std::string& column_name,                \
                                 const std::string& value) {                    \
       auto result = std::any{};                                                \
@@ -149,7 +156,7 @@
     }                                                                          \
     static bool evaluate(                                                      \
         const record_type& record,                                             \
-        cconst pplinq::details::operators::expression_tree& expression) {      \
+        const cpplinq::details::operators::expression_tree& expression) {      \
       return evaluate<decltype(*this)>(record, expression);                    \
     }                                                                          \
     static std::unordered_set<cpplinq::details::operators::comparison_result>  \
