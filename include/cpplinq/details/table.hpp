@@ -8,4 +8,4 @@ struct table {
   std::string alias;
 };
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

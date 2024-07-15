@@ -11,4 +11,4 @@ struct column {
   std::string type;
 };
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

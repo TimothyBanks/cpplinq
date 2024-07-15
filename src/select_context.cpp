@@ -8,11 +8,11 @@
 
 namespace cpplinq::details {
 
-bool is_select_statement(const std::string &sql) {
+bool is_select_statement(const std::string& sql) {
   return cpplinq::regex::begins_with(sql, "SELECT ");
 }
 
-select_context make_select_context(const std::string &sql) {
+select_context make_select_context(const std::string& sql) {
   /***************************
   General format of a SELECT statement in PostgreSQL:
   SELECT DISTINCT column1, column2, ...
@@ -67,11 +67,11 @@ select_context make_select_context(const std::string &sql) {
   // TODO:  Add a check for "*" and just populate the columns with all available
   // table columns.
   auto column_tokens = regex::split(tokens.back(), ',');
-  for (auto &c : column_tokens) {
+  for (auto& c : column_tokens) {
     auto subtokens = regex::split(c, " AS ");
 
     context.columns.emplace_back();
-    auto &new_column = context.columns.back();
+    auto& new_column = context.columns.back();
 
     // TODO:  If JOIN becomes supported, will need to parse table.column_name in
     // SELECT.
@@ -97,4 +97,4 @@ select_context make_select_context(const std::string &sql) {
   return context;
 }
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

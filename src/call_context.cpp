@@ -3,10 +3,12 @@
 
 namespace cpplinq::details {
 
-bool is_call_statement(const std::string &sql) {
+bool is_call_statement(const std::string& sql) {
   return cpplinq::regex::begins_with(sql, "CALL ");
 }
 
-call_context make_call_context(const std::string &sql) { return {}; }
+call_context make_call_context(const std::string& sql) {
+  return {};
+}
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

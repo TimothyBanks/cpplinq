@@ -13,4 +13,4 @@ struct in : public operator_base {
   std::optional<std::vector<std::any>> cached_values;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

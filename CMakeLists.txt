@@ -26,14 +26,15 @@ add_library(cpplinq STATIC
     src/column.cpp 
     src/count.cpp
     src/delete_context.cpp 
+    src/hash.cpp
     src/insert_context.cpp 
+    src/operators_make.cpp
     src/procedure.cpp 
     src/regex.cpp
     src/select_context.cpp 
     src/sql_context.cpp
     src/sum.cpp 
     src/table.cpp 
-    src/update_context.cpp 
-    src/expression_tree.cpp)
+    src/update_context.cpp)
 
 target_include_directories(cpplinq PUBLIC ./include)

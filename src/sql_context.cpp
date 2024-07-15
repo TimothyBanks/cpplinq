@@ -7,7 +7,7 @@
 
 namespace cpplinq::sql_context {
 
-cpplinq::details::cursor execute(const std::string &sql) {
+cpplinq::details::cursor execute(const std::string& sql) {
   if (details::is_call_statement(sql)) {
     auto context = details::make_call_context(sql);
   }
@@ -26,4 +26,4 @@ cpplinq::details::cursor execute(const std::string &sql) {
   return {};
 }
 
-} // namespace cpplinq::sql_context
+}  // namespace cpplinq::sql_context

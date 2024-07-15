@@ -5,4 +5,4 @@ namespace cpplinq::details::operators {
 
 struct ilike : public comparison_operator {};
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

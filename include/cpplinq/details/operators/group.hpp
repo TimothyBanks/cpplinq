@@ -7,4 +7,4 @@ struct group : public operator_base {
   operator_ptr root;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

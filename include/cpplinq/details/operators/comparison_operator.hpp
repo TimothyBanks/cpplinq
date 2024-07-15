@@ -11,4 +11,4 @@ struct comparison_operator : public operator_base {
   std::optional<std::any> cached_value;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

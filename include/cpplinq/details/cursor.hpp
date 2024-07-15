@@ -10,4 +10,4 @@ struct cursor {
   std::vector<std::vector<std::any>> results;
 };
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

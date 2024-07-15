@@ -5,4 +5,4 @@ namespace cpplinq::details::operators {
 
 struct equal_to : public comparison_operator {};
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

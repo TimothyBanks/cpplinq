@@ -7,15 +7,15 @@
 namespace cpplinq::details {
 
 struct select_context {
-    std::vector<column> columns;
-    std::string table_name;
-    std::string table_alias;
-    operators::expression_tree et;
-    std::optional<size_t> limit;
-    std::optional<size_t> offset;
+  std::vector<column> columns;
+  std::string table_name;
+  std::string table_alias;
+  operators::expression_tree et;
+  std::optional<size_t> limit;
+  std::optional<size_t> offset;
 };
 
 bool is_select_statement(const std::string& sql);
 select_context make_select_context(const std::string& sql);
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

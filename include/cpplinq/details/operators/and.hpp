@@ -5,4 +5,4 @@ namespace cpplinq::details::operators {
 
 struct and_operator : public logical_operator {};
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

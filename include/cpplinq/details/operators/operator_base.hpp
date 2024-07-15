@@ -10,4 +10,4 @@ struct operator_base {
 
 using operator_ptr = std::unique_ptr<operator_base>;
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

@@ -5,4 +5,4 @@ namespace cpplinq::details::operators {
 
 struct less_than : public comparison_operator {};
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

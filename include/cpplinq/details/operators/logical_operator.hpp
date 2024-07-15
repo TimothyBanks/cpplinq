@@ -9,4 +9,4 @@ struct logical_operator : public operator_base {
   operator_ptr right_operand;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

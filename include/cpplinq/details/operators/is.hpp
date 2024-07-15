@@ -9,4 +9,4 @@ struct in : public operator_base {
   operator_ptr op;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

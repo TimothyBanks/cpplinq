@@ -8,15 +8,15 @@ namespace cpplinq::details::operators {
 enum class comparison_result { less_than, greater_than, equal, not_equal };
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const and_operator &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const and_operator& op) {
   return evaluate<Table_trait>(t, op.left_operand) &&
          evaluate<Table_trait>(t, op.right_operand);
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const between &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const between& op) {
   if (!op.cached_begin) {
     op.cached_begin = Table_trait::from_string(op.column, op.begin);
   }
@@ -45,8 +45,8 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const equal_to &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const equal_to& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -55,14 +55,14 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const expression_tree &tree) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const expression_tree& tree) {
   return evaluate<Table_trait>(record, tree.root);
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const greater_than_equal &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const greater_than_equal& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -72,8 +72,8 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const greater_than &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const greater_than& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -82,14 +82,14 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const group &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const group& op) {
   return evaluate<Table_trait>(record, op.root);
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const ilike &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const ilike& op) {
   if (!op.cached_value) {
     op.cached_value = regex::to_regex(op.value);
   }
@@ -98,15 +98,15 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record, const in &op) {
+bool evaluate(const typename Table_trait::record_type& record, const in& op) {
   if (!op.cached_values) {
     auto cached_values = std::vector<std::any>{};
-    for (const auto &value : op.values) {
+    for (const auto& value : op.values) {
       cached_values.push_back(Table_trait::from_string(op.column, value));
     }
     op.cached_value = std::move(cached_values);
   }
-  for (const auto &value : *(op.cached_values)) {
+  for (const auto& value : *(op.cached_values)) {
     auto result = Table_trait::evaluate(op.column, record, value);
     if (result.count(comparison_result::equal)) {
       return true;
@@ -116,8 +116,8 @@ bool evaluate(const typename Table_trait::record_type &record, const in &op) {
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const less_than_equal &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const less_than_equal& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -127,8 +127,8 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const less_than &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const less_than& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -137,7 +137,7 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record, const like &op) {
+bool evaluate(const typename Table_trait::record_type& record, const like& op) {
   if (!op.cached_value) {
     op.cached_value = regex::to_regex(op.value);
   }
@@ -146,8 +146,8 @@ bool evaluate(const typename Table_trait::record_type &record, const like &op) {
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const not_equal &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const not_equal& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column, op.value);
   }
@@ -156,16 +156,16 @@ bool evaluate(const typename Table_trait::record_type &record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const not_operator &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const not_operator& op) {
   return !(evaluate<Table_trait>(record, op.op));
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type &record,
-              const or_operator &op) {
+bool evaluate(const typename Table_trait::record_type& record,
+              const or_operator& op) {
   return evaluate<Table_trait>(record, op.left_operand) ||
          evaluate<Table_trait>(record, op.right_operand);
 }
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

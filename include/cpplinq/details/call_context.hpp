@@ -6,7 +6,7 @@ namespace cpplinq::details {
 
 struct call_context {};
 
-bool is_call_statement(const std::string &sql);
-call_context make_call_context(const std::string &sql);
+bool is_call_statement(const std::string& sql);
+call_context make_call_context(const std::string& sql);
 
-} // namespace cpplinq::details
+}  // namespace cpplinq::details

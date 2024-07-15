@@ -5,39 +5,39 @@
 
 namespace cpplinq::details::operators {
 
-operator_ptr make_operator(std::string &sql);
+operator_ptr make_operator(std::string& sql);
 
-operator_ptr make_and_operator(std::string &left, std::string &right);
+operator_ptr make_and_operator(std::string& left, std::string& right);
 
-operator_ptr make_between(std::string &left, std::string &right);
+operator_ptr make_between(std::string& left, std::string& right);
 
-operator_ptr make_equal(std::string &left, std::string &right);
+operator_ptr make_equal(std::string& left, std::string& right);
 
-operator_ptr make_greater_than_equal(std::string &left, std::string &right);
+operator_ptr make_greater_than_equal(std::string& left, std::string& right);
 
-operator_ptr make_greater_than(std::string &left, std::string &right);
+operator_ptr make_greater_than(std::string& left, std::string& right);
 
-operator_ptr make_group(std::string &sql);
+operator_ptr make_group(std::string& sql);
 
-operator_ptr make_ilike(std::string &left, std::string &right);
+operator_ptr make_ilike(std::string& left, std::string& right);
 
-operator_ptr make_in(std::string &left, std::string &right);
+operator_ptr make_in(std::string& left, std::string& right);
 
-operator_ptr make_is(std::string &left, std::string &right);
+operator_ptr make_is(std::string& left, std::string& right);
 
-operator_ptr make_less_than_equal(std::string &left, std::string &right);
+operator_ptr make_less_than_equal(std::string& left, std::string& right);
 
-operator_ptr make_less_than(std::string &left, std::string &right);
+operator_ptr make_less_than(std::string& left, std::string& right);
 
-operator_ptr make_like(std::string &left, std::string &right);
+operator_ptr make_like(std::string& left, std::string& right);
 
-operator_ptr make_not_equal(std::string &left, std::string &right);
+operator_ptr make_not_equal(std::string& left, std::string& right);
 
-operator_ptr make_not_operator(std::string &left, std::string &right);
+operator_ptr make_not_operator(std::string& left, std::string& right);
 
-operator_ptr make_or_operator(std::string &left, std::string &right);
+operator_ptr make_or_operator(std::string& left, std::string& right);
 
-void push_groups(std::string &sql, std::vector<std::string> &groups) {
+void push_groups(std::string& sql, std::vector<std::string>& groups) {
   auto new_sql = std::string{};
   for (auto i = size_t{0}; i < sql.size(); ++i) {
     if (sql[i] == '{') {
@@ -53,7 +53,7 @@ void push_groups(std::string &sql, std::vector<std::string> &groups) {
   sql = new_sql;
 }
 
-std::vector<std::string> pop_groups(std::string &sql) {
+std::vector<std::string> pop_groups(std::string& sql) {
   static constexpr auto not_set = static_cast<size_t>(-1);
   auto position = not_set;
   auto count = size_t{0};
@@ -84,7 +84,7 @@ std::vector<std::string> pop_groups(std::string &sql) {
   return result;
 }
 
-operator_ptr make_operator(std::string &sql) {
+operator_ptr make_operator(std::string& sql) {
   // First step is we need to handle parenthesis.  The idea will be
   // to "erase" things between parenthesis to correctly parse things
   // in a top down fashion.
@@ -116,13 +116,13 @@ operator_ptr make_operator(std::string &sql) {
     return operator_ptr{};
   };
 
-  if (auto ptr = make(" AND ", [](auto &left, auto &right) {
+  if (auto ptr = make(" AND ", [](auto& left, auto& right) {
         return make_and_operator(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" OR ", [](auto &left, auto &right) {
+  if (auto ptr = make(" OR ", [](auto& left, auto& right) {
         return make_or_operator(left, right);
       })) {
     return ptr;
@@ -134,37 +134,37 @@ operator_ptr make_operator(std::string &sql) {
   //     return ptr;
   //   }
 
-  if (auto ptr = make(" < ", [](auto &left, auto &right) {
+  if (auto ptr = make(" < ", [](auto& left, auto& right) {
         return make_less_than(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" <= ", [](auto &left, auto &right) {
+  if (auto ptr = make(" <= ", [](auto& left, auto& right) {
         return make_less_than_equal(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" > ", [](auto &left, auto &right) {
+  if (auto ptr = make(" > ", [](auto& left, auto& right) {
         return make_greater_than(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" >= ", [](auto &left, auto &right) {
+  if (auto ptr = make(" >= ", [](auto& left, auto& right) {
         return make_greater_than_equal(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" <> ", [](auto &left, auto &right) {
+  if (auto ptr = make(" <> ", [](auto& left, auto& right) {
         return make_equal(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" != ", [](auto &left, auto &right) {
+  if (auto ptr = make(" != ", [](auto& left, auto& right) {
         return make_not_equal(left, right);
       })) {
     return ptr;
@@ -176,25 +176,25 @@ operator_ptr make_operator(std::string &sql) {
   //     return ptr;
   //   }
 
-  if (auto ptr = make(" ILIKE ", [](auto &left, auto &right) {
+  if (auto ptr = make(" ILIKE ", [](auto& left, auto& right) {
         return make_ilike(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" LIKE ", [](auto &left, auto &right) {
+  if (auto ptr = make(" LIKE ", [](auto& left, auto& right) {
         return make_like(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" BETWEEN ", [](auto &left, auto &right) {
+  if (auto ptr = make(" BETWEEN ", [](auto& left, auto& right) {
         return make_between(left, right);
       })) {
     return ptr;
   }
 
-  if (auto ptr = make(" IN ", [](auto &left, auto &right) {
+  if (auto ptr = make(" IN ", [](auto& left, auto& right) {
         return make_in(left, right);
       })) {
     return ptr;
@@ -204,14 +204,14 @@ operator_ptr make_operator(std::string &sql) {
   throw "Unsupported SQL syntax";
 }
 
-operator_ptr make_and_operator(std::string &left, std::string &right) {
+operator_ptr make_and_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<and_operator>();
   op->left_operand = make_operator(left);
   op->right_operand = make_operator(right);
   return op;
 }
 
-operator_ptr make_between(std::string &left, std::string &right) {
+operator_ptr make_between(std::string& left, std::string& right) {
   auto op = std::make_unique<between>();
   op->column = std::move(cpplinq::details::string::trim(left));
   right = cpplinq::details::string::trim(right);
@@ -224,7 +224,7 @@ operator_ptr make_between(std::string &left, std::string &right) {
   return op;
 }
 
-operator_ptr make_equal(std::string &left, std::string &right) {
+operator_ptr make_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<equal_to>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
@@ -237,21 +237,21 @@ expression_tree make_expression_tree(std::string sql) {
   return t;
 }
 
-operator_ptr make_greater_than_equal(std::string &left, std::string &right) {
+operator_ptr make_greater_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than_equal>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_greater_than(std::string &left, std::string &right) {
+operator_ptr make_greater_than(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_group(std::string &sql) {
+operator_ptr make_group(std::string& sql) {
   auto group_sql = sql.substr(1);
   group_sql.pop_back();
   auto op = std::make_unique<group>();
@@ -259,67 +259,67 @@ operator_ptr make_group(std::string &sql) {
   return op;
 }
 
-operator_ptr make_ilike(std::string &left, std::string &right) {
+operator_ptr make_ilike(std::string& left, std::string& right) {
   auto op = std::make_unique<ilike>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_in(std::string &left, std::string &right) {
+operator_ptr make_in(std::string& left, std::string& right) {
   auto op = std::make_unique<in>();
   op->column = std::move(cpplinq::details::string::trim(left));
   right = std::move(cpplinq::details::string::trim(right));
   right = right.substr(1);
   right.pop_back();
   auto values = regex::tokenize(right, ',');
-  for (auto &value : values) {
+  for (auto& value : values) {
     op->values.emplace(std::move(cpplinq::details::string::trim(value)));
   }
   return {};
 }
 
-operator_ptr make_is(std::string &left, std::string &right) {
+operator_ptr make_is(std::string& left, std::string& right) {
   throw "Unsupported SQL syntax";
 }
 
-operator_ptr make_less_than_equal(std::string &left, std::string &right) {
+operator_ptr make_less_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than_equal>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_less_than(std::string &left, std::string &right) {
+operator_ptr make_less_than(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_like(std::string &left, std::string &right) {
+operator_ptr make_like(std::string& left, std::string& right) {
   auto op = std::make_unique<like>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_not_equal(std::string &left, std::string &right) {
+operator_ptr make_not_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<not_equal>();
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 
-operator_ptr make_not_operator(std::string &left, std::string &right) {
+operator_ptr make_not_operator(std::string& left, std::string& right) {
   throw "Unsupported SQL syntax";
 }
 
-operator_ptr make_or_operator(std::string &left, std::string &right) {
+operator_ptr make_or_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<or_operator>();
   op->left_operand = make_operator(cpplinq::details::string::trim(left));
   op->right_operand = make_operator(cpplinq::details::string::trim(right));
   return op;
 }
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

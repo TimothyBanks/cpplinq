@@ -13,4 +13,4 @@ struct between : public operator_base {
   std::optional<std::any> cached_end;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

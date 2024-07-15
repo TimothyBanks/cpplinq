@@ -5,4 +5,4 @@ namespace cpplinq::details::operators {
 
 struct not_equal : public comparison_operator {};
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators

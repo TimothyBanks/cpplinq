@@ -7,4 +7,4 @@ struct expression_tree {
   operator_ptr root;
 };
 
-} // namespace cpplinq::details::operators
+}  // namespace cpplinq::details::operators
