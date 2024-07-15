@@ -2,9 +2,11 @@
 #include <cpplinq/details/cursor.hpp>
 #include <string_view>
 
-namespace cpplinq::details::delete_context {
+namespace cpplinq::details {
 
-bool is_this_statement(const std::string &sql);
-cursor execute(const std::string &sql);
+struct delete_context {};
 
-} // namespace cpplinq::details::delete_context
+bool is_delete_statement(const std::string &sql);
+delete_context make_delete_context(const std::string &sql);
+
+} // namespace cpplinq::details

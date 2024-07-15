@@ -279,7 +279,9 @@ operator_ptr make_in(std::string &left, std::string &right) {
   return {};
 }
 
-operator_ptr make_is(std::string &left, std::string &right) { return {}; }
+operator_ptr make_is(std::string &left, std::string &right) { 
+    throw "Unsupported SQL syntax";
+}
 
 operator_ptr make_less_than_equal(std::string &left, std::string &right) {
   auto op = std::make_unique<less_than_equal>();
@@ -309,8 +311,8 @@ operator_ptr make_not_equal(std::string &left, std::string &right) {
   return op;
 }
 
-operator_ptr make_not_operator(std::string &left, std::string &right) {
-  return {};
+operator_ptr make_not_operator(std::string &left, std::string &right) { 
+    throw "Unsupported SQL syntax";
 }
 
 operator_ptr make_or_operator(std::string &left, std::string &right) {

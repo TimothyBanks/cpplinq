@@ -8,20 +8,20 @@
 namespace cpplinq::sql_context {
 
 cpplinq::details::cursor execute(const std::string &sql) {
-  if (details::call_context::is_this_statement(sql)) {
-    return details::call_context::execute(sql);
+  if (details::is_call_statement(sql)) {
+    auto context = details::make_call_context(sql);
   }
-  if (details::delete_context::is_this_statement(sql)) {
-    return details::delete_context::execute(sql);
+  if (details::is_delete_statement(sql)) {
+    auto context = details::make_delete_context(sql);
   }
-  if (details::insert_context::is_this_statement(sql)) {
-    return details::insert_context::execute(sql);
+  if (details::is_insert_statement(sql)) {
+    auto context = details::make_insert_context(sql);
   }
-  if (details::select_context::is_this_statement(sql)) {
-    return details::select_context::execute(sql);
+  if (details::is_select_statement(sql)) {
+    auto context = details::make_select_context(sql);
   }
-  if (details::update_context::is_this_statement(sql)) {
-    return details::update_context::execute(sql);
+  if (details::is_update_statement(sql)) {
+    auto context = details::make_update_context(sql);
   }
   return {};
 }

@@ -1,17 +1,18 @@
 #include <cpplinq/details/column.hpp>
+#include <cpplinq/details/operators/make.hpp>
 #include <cpplinq/details/regex.hpp>
 #include <cpplinq/details/select_context.hpp>
 #include <cpplinq/details/string.hpp>
 #include <cpplinq/details/table.hpp>
 #include <cpplinq/details/unsupported.hpp>
 
-namespace cpplinq::details::select_context {
+namespace cpplinq::details {
 
-bool is_this_statement(const std::string &sql) {
+bool is_select_statement(const std::string &sql) {
   return cpplinq::regex::begins_with(sql, "SELECT ");
 }
 
-cursor execute(const std::string &sql) {
+select_context make_select_context(const std::string &sql) {
   /***************************
   General format of a SELECT statement in PostgreSQL:
   SELECT DISTINCT column1, column2, ...
@@ -24,19 +25,19 @@ cursor execute(const std::string &sql) {
   LIMIT number OFFSET number;
   ****************************/
 
+  auto context = select_context{};
+
   // While it would be much better to use a lexer and parser such as boost
   // spirit, for now we tokenize the string by starting from the OFFSET keyword
   // and popping off the last part of the statement.
   auto tokens = regex::split(sql, " OFFSET ");
-  auto offset = size_t{0};
   if (tokens.size() > 1) {
-    offset = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+    context.offset = static_cast<size_t>(std::atoll(tokens.back().c_str()));
   }
 
   tokens = regex::split(tokens.front(), " LIMIT ");
-  auto limit = size_t{0};
   if (tokens.size() > 1) {
-    limit = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+    context.limit = static_cast<size_t>(std::atoll(tokens.back().c_str()));
   }
 
   check_unsupported_token(tokens.front(), " ORDER BY ");
@@ -46,17 +47,16 @@ cursor execute(const std::string &sql) {
   tokens = regex::split(tokens.front(), " WHERE ");
   if (tokens.size() > 1) {
     // Build the expression tree from the conditionals in the WHERE
+    context.et = details::operators::make_expression_tree(tokens.back());
   }
 
   check_unsupported_token(tokens.front(), " JOIN ");
 
   tokens = regex::split(tokens.front(), " FROM ");
-  auto t = table{};
-  auto table_alias = std::string{};
   if (tokens.size() > 1) {
     auto subtokens = regex::split(tokens.back(), " AS ");
-    t.name = cpplinq::details::string::trim(subtokens.front());
-    t.alias = subtokens.size() > 1
+    context.table_name = cpplinq::details::string::trim(subtokens.front());
+    context.table_alias = subtokens.size() > 1
                   ? cpplinq::details::string::trim(subtokens.back())
                   : std::string{};
   }
@@ -64,17 +64,17 @@ cursor execute(const std::string &sql) {
   check_unsupported_token(tokens.front(), " DISTINCT ");
 
   tokens = regex::split(tokens.front(), "SELECT ");
+  // TODO:  Add a check for "*" and just populate the columns with all available table columns.
   auto column_tokens = regex::split(tokens.back(), ',');
-  auto columns = std::vector<column>{};
   for (auto &c : column_tokens) {
     auto subtokens = regex::split(c, " AS ");
 
-    columns.emplace_back();
-    auto &new_column = columns.back();
+    context.columns.emplace_back();
+    auto &new_column = context.columns.back();
 
     // TODO:  If JOIN becomes supported, will need to parse table.column_name in
     // SELECT.
-    new_column.table = t.alias.empty() ? t.name : t.alias;
+    new_column.table = context.table_alias.empty() ? context.table_name : context.table_alias;
     new_column.alias = subtokens.size() > 1
                            ? cpplinq::details::string::trim(subtokens.back())
                            : std::string{};
@@ -92,9 +92,7 @@ cursor execute(const std::string &sql) {
     }
   }
 
-  // Execute the statement.
-
-  return {};
+  return context;
 }
 
-} // namespace cpplinq::details::select_context
+} // namespace cpplinq::details

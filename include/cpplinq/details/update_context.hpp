@@ -2,9 +2,11 @@
 #include <cpplinq/details/cursor.hpp>
 #include <string_view>
 
-namespace cpplinq::details::update_context {
+namespace cpplinq::details {
 
-bool is_this_statement(const std::string &sql);
-cursor execute(const std::string &sql);
+struct update_context {};
 
-} // namespace cpplinq::details::update_context
+bool is_update_statement(const std::string &sql);
+update_context make_update_context(const std::string &sql);
+
+} // namespace cpplinq::details
