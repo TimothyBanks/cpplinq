@@ -1,3 +1,4 @@
+#include <cpplinq/details/cpplinq_exception.hpp>
 #include <cpplinq/details/traits/any_table.hpp>
 
 namespace cpplinq::details::traits {
@@ -8,14 +9,14 @@ any_table::any_table(std::nullptr_t)
 
 const std::string& any_table::name() const {
   if (!ptr) {
-    throw "Invalid table state";
+    throw cpplinq::details::cpplinq_exception{"Invalid table state"};
   }
   return ptr->name();
 }
 
 const std::vector<std::string>& any_table::columns() const {
   if (!ptr) {
-    throw "Invalid table state";
+    throw cpplinq::details::cpplinq_exception{"Invalid table state"};
   }
   return ptr->columns();
 }
@@ -23,7 +24,7 @@ const std::vector<std::string>& any_table::columns() const {
 cpplinq::details::cursor any_table::execute(
     const select_context& context) const {
   if (!ptr) {
-    throw "Invalid table state";
+    throw cpplinq::details::cpplinq_exception{"Invalid table state"};
   }
   return ptr->execute(context);
 }

@@ -9,6 +9,67 @@ enum class comparison_result { less_than, greater_than, equal, not_equal };
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
+              const and_operator& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const between& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const equal_to& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const expression_tree& tree);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const greater_than_equal& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const greater_than& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record, const group& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record, const ilike& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record, const in& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const less_than_equal& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const less_than& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record, const like& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const not_equal& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const not_operator& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              const or_operator& op);
+
+template <typename T, typename U = T>
+std::vector<cpplinq::details::operators::comparison_result> evaluate(
+    const T& left,
+    const U& right);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
               const and_operator& op) {
   return evaluate<Table_trait>(t, op.left_operand) &&
          evaluate<Table_trait>(t, op.right_operand);
@@ -166,6 +227,25 @@ bool evaluate(const typename Table_trait::record_type& record,
               const or_operator& op) {
   return evaluate<Table_trait>(record, op.left_operand) ||
          evaluate<Table_trait>(record, op.right_operand);
+}
+
+template <typename T, typename U = T>
+std::vector<cpplinq::details::operators::comparison_result> evaluate(
+    const T& left,
+    const U& right) {
+  auto result = std::vector<cpplinq::details::operators::comparison_result>{};
+  if (left < right) {
+    result.emplace(cpplinq::details::operators::comparison_result::less_than);
+  } else if (left > right) {
+    result.emplace(
+        cpplinq::details::operators::comparison_result::greater_than);
+  }
+  if (left == right) {
+    result.emplace(cpplinq::details::operators::comparison_result::equal);
+  } else {
+    result.emplace(cpplinq::details::operators::comparison_result::not_equal);
+  }
+  return result;
 }
 
 }  // namespace cpplinq::details::operators

@@ -1,3 +1,4 @@
+#include <cpplinq/details/cpplinq_exception.hpp>
 #include <cpplinq/details/operators/make.hpp>
 #include <cpplinq/details/operators/operators.hpp>
 #include <cpplinq/details/regex.hpp>
@@ -201,7 +202,7 @@ operator_ptr make_operator(std::string& sql) {
   }
 
   push_groups(sql, groups);
-  throw "Unsupported SQL syntax";
+  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_and_operator(std::string& left, std::string& right) {
@@ -217,7 +218,7 @@ operator_ptr make_between(std::string& left, std::string& right) {
   right = cpplinq::details::string::trim(right);
   auto tokens = regex::split(right, " AND ");
   if (tokens.size() != 2) {
-    throw "Unsupported SQL syntax";
+    throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
   }
   op->begin = tokens.front();
   op->end = tokens.back();
@@ -280,7 +281,7 @@ operator_ptr make_in(std::string& left, std::string& right) {
 }
 
 operator_ptr make_is(std::string& left, std::string& right) {
-  throw "Unsupported SQL syntax";
+  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_less_than_equal(std::string& left, std::string& right) {
@@ -312,7 +313,7 @@ operator_ptr make_not_equal(std::string& left, std::string& right) {
 }
 
 operator_ptr make_not_operator(std::string& left, std::string& right) {
-  throw "Unsupported SQL syntax";
+  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_or_operator(std::string& left, std::string& right) {

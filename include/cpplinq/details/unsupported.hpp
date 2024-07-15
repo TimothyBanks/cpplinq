@@ -1,4 +1,5 @@
 #pragma once
+#include <cpplinq/details/cpplinq_exception.hpp>
 #include <cpplinq/details/regex.hpp>
 #include <string>
 
@@ -9,8 +10,7 @@ void check_unsupported_token(const std::string& sql, const std::string& token) {
   if (tokens.size() <= 1) {
     return;
   }
-  // TODO: Throw an exception.
-  throw "Token " + token + " is unsupported";
+  throw cpplinq::details::cpplinq_exception{"Token " + token + " is unsupported"};
 }
 
 }  // namespace cpplinq::details

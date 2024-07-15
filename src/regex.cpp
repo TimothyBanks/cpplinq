@@ -38,8 +38,11 @@ std::string to_regex(const std::string& sql) {
 bool match(const std::string& s,
            const std::string& pattern,
            bool case_sensitive) {
-  auto regex_pattern =
-      std::regex{pattern, case_sensitive ? std::regex_constants::icase : -1};
+  auto flags = std::regex_constants::ECMAScript;
+  if (!case_sensitive) {
+    flags |= std::regex_constants::icase;
+  }
+  auto regex_pattern = std::regex{pattern, flags};
   return std::regex_search(s, regex_pattern);
 }
 

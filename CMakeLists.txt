@@ -35,6 +35,7 @@ add_library(cpplinq STATIC
     src/sql_context.cpp
     src/sum.cpp 
     src/table.cpp 
+    src/table_registry.cpp
     src/update_context.cpp)
 
 target_include_directories(cpplinq PUBLIC ./include)

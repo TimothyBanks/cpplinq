@@ -168,6 +168,10 @@
     }                                                                          \
   };                                                                           \
   static auto BOOST_PP_CAT(registered_, __table_name__) = []() {               \
+    using trait = table_trait<__table_type__, __record_type__,                 \
+                              cpplinq::details::traits::hash(__table_name__)>; \
+    cpplinq::details::table_registry::instance().add(__table_name__,           \
+                                                     any_table<trait>{});      \
     return true;                                                               \
   }();                                                                         \
   }  // namespace cpplinq::details::traits
@@ -176,24 +180,5 @@ namespace cpplinq::details::traits {
 
 template <typename Table_type, typename Record_type, size_t Hash>
 struct table_trait;
-
-template <typename T, typename U = T>
-std::vector<cpplinq::details::operators::comparison_result> evaluate(
-    const T& left,
-    const U& right) {
-  auto result = std::vector<cpplinq::details::operators::comparison_result>{};
-  if (left < right) {
-    result.emplace(cpplinq::details::operators::comparison_result::less_than);
-  } else if (left > right) {
-    result.emplace(
-        cpplinq::details::operators::comparison_result::greater_than);
-  }
-  if (left == right) {
-    result.emplace(cpplinq::details::operators::comparison_result::equal);
-  } else {
-    result.emplace(cpplinq::details::operators::comparison_result::not_equal);
-  }
-  return result;
-}
 
 }  // namespace cpplinq::details::traits
