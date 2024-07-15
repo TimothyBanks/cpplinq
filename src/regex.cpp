@@ -9,6 +9,39 @@ bool begins_with(const std::string &s, const std::string &token) {
   return std::regex_search(s, regex_pattern);
 }
 
+std::string to_regex(const std::string &sql) {
+  auto expression = std::string{};
+  for (auto i = size_t{0}; i < sql.size(); ++i) {
+    auto ch = sql[i];
+    switch (ch) {
+    case '%':
+      expression += ".*"; // Match any sequence of characters
+      break;
+    case '_':
+      expression += "."; // Match any single character
+      break;
+    case '\\':
+      expression += "\\\\"; // Escape backslash
+      break;
+    default:
+      // Escape special regex characters
+      if (std::ispunct(ch)) {
+        expression += "\\";
+      }
+      expression += ch;
+      break;
+    }
+  }
+  return expression;
+}
+
+bool match(const std::string &s, const std::string &pattern,
+           bool case_sensitive) {
+  auto regex_pattern =
+      std::regex{pattern, case_sensitive ? std::regex_constants::icase : -1};
+  return std::regex_search(s, regex_pattern);
+}
+
 std::vector<std::string> split_(const std::string &s,
                                 const std::string &token) {
   auto tokens = std::vector<std::string>{};

@@ -57,14 +57,15 @@ select_context make_select_context(const std::string &sql) {
     auto subtokens = regex::split(tokens.back(), " AS ");
     context.table_name = cpplinq::details::string::trim(subtokens.front());
     context.table_alias = subtokens.size() > 1
-                  ? cpplinq::details::string::trim(subtokens.back())
-                  : std::string{};
+                              ? cpplinq::details::string::trim(subtokens.back())
+                              : std::string{};
   }
 
   check_unsupported_token(tokens.front(), " DISTINCT ");
 
   tokens = regex::split(tokens.front(), "SELECT ");
-  // TODO:  Add a check for "*" and just populate the columns with all available table columns.
+  // TODO:  Add a check for "*" and just populate the columns with all available
+  // table columns.
   auto column_tokens = regex::split(tokens.back(), ',');
   for (auto &c : column_tokens) {
     auto subtokens = regex::split(c, " AS ");
@@ -74,7 +75,8 @@ select_context make_select_context(const std::string &sql) {
 
     // TODO:  If JOIN becomes supported, will need to parse table.column_name in
     // SELECT.
-    new_column.table = context.table_alias.empty() ? context.table_name : context.table_alias;
+    new_column.table =
+        context.table_alias.empty() ? context.table_name : context.table_alias;
     new_column.alias = subtokens.size() > 1
                            ? cpplinq::details::string::trim(subtokens.back())
                            : std::string{};
