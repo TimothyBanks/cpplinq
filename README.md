@@ -130,6 +130,7 @@ struct table_index {
 // 1.  It is a singleton and exposes a static method called instance.
 // 2.  It has an instance method, called primary_index, to retrieve the primary index to iterate on.
 // 3.  The "index" type returned must conform to the range concept.
+// 4.  As the development of this library progresses, there may be additional concepts centered around secondary indices.
 struct foo_table {
     friend class table_index<foo_table, uint64_t>;
 
