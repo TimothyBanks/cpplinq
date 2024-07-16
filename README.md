@@ -249,7 +249,10 @@ struct table_trait<foo_table,
   using type = table_trait<foo_table,
                            foo_record,
                            cpplinq::details::traits::hash("foo_table")>;
-  static const std::string& name() { return "foo_table"; }
+  static const std::string& name() {
+    static const auto name = std::string{"foo_table"};
+    return name;
+  }
   static const std::vector<std::string>& columns() {
     static const auto columns_ = std::vector<std::string>{
         "id",
@@ -301,9 +304,8 @@ struct table_trait<foo_table,
                               const std::string& value) {
     auto result = std::any{};
     invoke(column_name, [&](const auto& trait) {
-      result =
-          underlying_column_type_t<declytpe(trait)::column_type>::from_string(
-              value);
+      result = underlying_column_type<typename std::decay_t<
+          decltype(trait)>::column_type>::from_string(value);
     });
     return result;
   }
@@ -312,16 +314,15 @@ struct table_trait<foo_table,
     auto result = std::string{};
     invoke(column_name, [&](const auto& trait) {
       const auto& value = trait.value(record);
-      result =
-          underlying_column_type_t<decltype(trait)::column_type>::to_string(
-              value);
+      result = underlying_column_type<typename std::decay_t<
+          decltype(trait)>::column_type>::to_string(value);
     });
     return result;
   }
   static bool evaluate(
       const record_type& record,
-      const cpplinq::details::operators::expression_tree& expression) {
-    return evaluate<type>(record, expression);
+      cpplinq::details::operators::expression_tree& expression) {
+    return cpplinq::details::operators::evaluate<type>(record, expression);
   }
   static std::unordered_set<cpplinq::details::operators::comparison_result>
   evaluate(const std::string& column_name,
@@ -331,9 +332,9 @@ struct table_trait<foo_table,
         std::unordered_set<cpplinq::details::operators::comparison_result>{};
     invoke(column_name, [&](const auto& trait) {
       const auto& column_value = trait.value(record);
-      const auto& op_value =
-          std::any_cast<decltype(trait)::column_type&>(value);
-      result = evaluate(column_value, op_value);
+      const auto& op_value = std::any_cast<
+          const typename std::decay_t<decltype(trait)>::column_type&>(value);
+      result = cpplinq::details::operators::evaluate(column_value, op_value);
     });
     return result;
   }
@@ -342,7 +343,7 @@ static auto registered_foo_table = []() {
   using trait = table_trait<foo_table, foo_record,
                             cpplinq::details::traits::hash("foo_table")>;
   cpplinq::details::table_registry::instance().add(
-      "foo_table", cpplinq::details::traits::any_table<trait>{});
+      "foo_table", cpplinq::details::traits::any_table{trait{}});
   return true;
 }();
 }  // namespace cpplinq::details::traits
