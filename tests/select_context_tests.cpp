@@ -145,6 +145,18 @@ struct foo_table {
         return instance_;
     }
 
+    void push(record_type record) {
+        records_.emplace_back();
+        records_.back() = std::move(record);
+    }
+
+    void pop(size_t index) {
+        if (index >= records_.size()) {
+            return;
+        }
+        records_.erase(std::begin(records_) + index);
+    }
+
     backing_store& data() { return records_; }
     const backing_store& data() const { return records_; }
 
