@@ -17,10 +17,6 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-# if(CPPLINQ_BUILD_TESTS)
-    add_subdirectory(tests)
-# endif()
-
 add_library(cpplinq STATIC  
     src/call_context.cpp 
     src/column.cpp 
@@ -33,9 +29,15 @@ add_library(cpplinq STATIC
     src/regex.cpp
     src/select_context.cpp 
     src/sql_context.cpp
+    src/string.cpp
     src/sum.cpp 
     src/table.cpp 
     src/table_registry.cpp
-    src/update_context.cpp)
+    src/update_context.cpp
+    src/unsupported.cpp)
 
 target_include_directories(cpplinq PUBLIC ./include)
+
+# if(CPPLINQ_BUILD_TESTS)
+add_subdirectory(tests)
+# endif()

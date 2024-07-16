@@ -1,6 +1,6 @@
 #pragma once
 #include <cpplinq/details/cursor.hpp>
-#include <string_view>
+#include <string>
 
 namespace cpplinq::sql_context {
 
