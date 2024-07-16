@@ -17,7 +17,9 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-add_library(cpplinq STATIC  
+add_library(cpplinq STATIC
+    src/any_procedure.cpp  
+    src/any_table.cpp
     src/call_context.cpp 
     src/column.cpp 
     src/count.cpp
@@ -31,10 +33,10 @@ add_library(cpplinq STATIC
     src/sql_context.cpp
     src/string.cpp
     src/sum.cpp 
-    src/table.cpp 
     src/table_registry.cpp
-    src/update_context.cpp
-    src/unsupported.cpp)
+    src/table.cpp 
+    src/unsupported.cpp
+    src/update_context.cpp)
 
 target_include_directories(cpplinq PUBLIC ./include)
 

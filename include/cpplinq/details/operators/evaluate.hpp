@@ -156,6 +156,10 @@ bool evaluate(const typename Table_trait::record_type& record, equal_to& op) {
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
               expression_tree& tree) {
+  if (!tree.root) {
+    // This indicates no WHERE clause.
+    return true;
+  }
   return evaluate<Table_trait>(record, tree.root);
 }
 

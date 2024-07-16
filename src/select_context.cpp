@@ -4,6 +4,7 @@
 #include <cpplinq/details/select_context.hpp>
 #include <cpplinq/details/string.hpp>
 #include <cpplinq/details/table.hpp>
+#include <cpplinq/details/table_registry.hpp>
 #include <cpplinq/details/unsupported.hpp>
 
 namespace cpplinq::details {
@@ -61,36 +62,46 @@ select_context make_select_context(const std::string& sql) {
                               : std::string{};
   }
 
+  auto& table = cpplinq::details::table_registry::instance().find(context.table_name);
+
   check_unsupported_token(tokens.front(), " DISTINCT ");
 
   tokens = regex::split(tokens.front(), "SELECT ");
-  // TODO:  Add a check for "*" and just populate the columns with all available
-  // table columns.
   auto column_tokens = regex::split(tokens.back(), ',');
-  for (auto& c : column_tokens) {
-    auto subtokens = regex::split(c, " AS ");
+  if (column_tokens.size() == 1 && cpplinq::details::string::trim(column_tokens.front()) == "*") {
+    for (const auto& column_name : table.columns()) {
+      context.columns.emplace_back();
+      auto& new_column = context.columns.back();
+      new_column.name = column_name;
+      new_column.table = 
+          context.table_alias.empty() ? context.table_name : context.table_alias;
+    }
+  } else {
+    for (auto& c : column_tokens) {
+      auto subtokens = regex::split(c, " AS ");
 
-    context.columns.emplace_back();
-    auto& new_column = context.columns.back();
+      context.columns.emplace_back();
+      auto& new_column = context.columns.back();
 
-    // TODO:  If JOIN becomes supported, will need to parse table.column_name in
-    // SELECT.
-    new_column.table =
-        context.table_alias.empty() ? context.table_name : context.table_alias;
-    new_column.alias = subtokens.size() > 1
-                           ? cpplinq::details::string::trim(subtokens.back())
-                           : std::string{};
+      // TODO:  If JOIN becomes supported, will need to parse table.column_name in
+      // SELECT.
+      new_column.table =
+          context.table_alias.empty() ? context.table_name : context.table_alias;
+      new_column.alias = subtokens.size() > 1
+                            ? cpplinq::details::string::trim(subtokens.back())
+                            : std::string{};
 
-    auto column_token = subtokens.front();
-    subtokens = regex::split(column_token, '(');
-    if (subtokens.size() > 1) {
-      // This is an aggregate function.
-      new_column.aggregate = subtokens.front();
-      subtokens = regex::split(subtokens.back(), ')');
-      new_column.name =
-          subtokens.front().empty() ? new_column.alias : subtokens.front();
-    } else {
-      new_column.name = cpplinq::details::string::trim(column_token);
+      auto column_token = subtokens.front();
+      subtokens = regex::split(column_token, '(');
+      if (subtokens.size() > 1) {
+        // This is an aggregate function.
+        new_column.aggregate = subtokens.front();
+        subtokens = regex::split(subtokens.back(), ')');
+        new_column.name =
+            subtokens.front().empty() ? new_column.alias : subtokens.front();
+      } else {
+        new_column.name = cpplinq::details::string::trim(column_token);
+      }
     }
   }
 
