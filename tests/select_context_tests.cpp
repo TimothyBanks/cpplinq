@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 
+// cpplinq places no concepts on the table structure.
 struct foo_record {
     uint64_t id;
     std::string foo;
@@ -20,42 +21,42 @@ struct foo_record {
 // type can be whatever you want it to be as long as it conforms
 // to that concept.
 template <typename Table, typename... T>
-struct index {
-    using index_type   = std::tuple<T...>;
-    using table_type   = Table;
-    using backing_type = std::map<index_type, size_t>;
+struct table_index {
+    using table_index_type = std::tuple<T...>;
+    using table_type       = Table;
+    using backing_type     = std::map<table_index_type, size_t>;
 
     backing_type index_;
     const table_type* table_;
 
-    index() = default;
-    index(const index&) = default;
-    index(index&&) = default;
+    table_index() = default;
+    table_index(const table_index&) = default;
+    table_index(table_index&&) = default;
 
-    index(const table_type& table) : table_{&table} {}
+    table_index(const table_type& table) : table_{&table} {}
 
-    index& operator=(const index&) = default;
-    index& operator=(index&&) = default;
+    table_index& operator=(const table_index&) = default;
+    table_index& operator=(table_index&&) = default;
 
-    void push(index_type key, size_t position) {
+    void push(table_index_type key, size_t position) {
         index_.emplace(std::move(key), position);
     }
 
-    void pop(const index_type& key) {
+    void pop(const table_index_type& key) {
         index_.remove(key);
     }
 
     struct iterator {
-        backing_type::iterator begin_;
-        backing_type::iterator end_;
-        mutable backing_type::iterator it_;
+        typename backing_type::iterator begin_;
+        typename backing_type::iterator end_;
+        mutable typename backing_type::iterator it_;
         table_type* table_;
 
         iterator() = default;
         iterator(const iterator&) = default;
         iterator(iterator&&) = default;
 
-        iterator(table_type& table, backing_type::iterator begin, backing_type::iterator end, backing_type::iterator it)
+        iterator(table_type& table, typename backing_type::iterator begin, typename backing_type::iterator end, typename backing_type::iterator it)
             : table_{&table}, begin_{std::move(begin)}, end_{std::move(end)}, it_{std::move(it)} {}
 
         iterator& operator=(const iterator&) = default;
@@ -94,11 +95,11 @@ struct index {
         return iterator{*table_, std::begin(index_), std::end(index_), std::end(index_)};
     }
 
-    iterator lower_bound(const index_type& key) {
+    iterator lower_bound(const table_index_type& key) {
         return iterator{*table_, std::begin(index_), std::end(index_), index_.lower_bound(key)};
     }
 
-    iterator upper_bound(const index_type& key) {
+    iterator upper_bound(const table_index_type& key) {
         return iterator{*table_, std::begin(index_), std::end(index_), index_.upper_bound(key)};
     }
 
@@ -110,11 +111,11 @@ struct index {
         return iterator{*table_, std::begin(index_), std::end(index_), std::end(index_)};
     }
 
-    const iterator lower_bound(const index_type& key) const {
+    const iterator lower_bound(const table_index_type& key) const {
         return iterator{*table_, std::begin(index_), std::end(index_), index_.lower_bound(key)};
     }
 
-    const iterator upper_bound(const index_type& key) const {
+    const iterator upper_bound(const table_index_type& key) const {
         return iterator{*table_, std::begin(index_), std::end(index_), index_.upper_bound(key)};
     }
 };
@@ -124,12 +125,12 @@ struct index {
 // 1.  It is a singleton and exposes a static method called instance.
 // 2.  It has an instance method, called primary_index, to retrieve the primary index to iterate on.
 struct foo_table {
-    friend class index<foo_table, uint64_t>;
+    friend class table_index<foo_table, uint64_t>;
 
     using record_type = foo_record;
     using backing_store = std::vector<record_type>;
 
-    index<foo_table, uint64_t> primary_index_;
+    table_index<foo_table, uint64_t> primary_index_;
     backing_store records_;
 
     foo_table() : primary_index_{*this} {}
@@ -147,11 +148,11 @@ struct foo_table {
     backing_store& data() { return records_; }
     const backing_store& data() const { return records_; }
 
-    const index<foo_table, uint64_t>& primary_index() const {
+    const table_index<foo_table, uint64_t>& primary_index() const {
         return primary_index_;
     }
 
-    index<foo_table, uint64_t>& primary_index() {
+    table_index<foo_table, uint64_t>& primary_index() {
         return primary_index_;
     }
 };
@@ -159,7 +160,7 @@ struct foo_table {
 BOOST_AUTO_TEST_CASE(select_context)
 {
     auto table = foo_table{};
-    
+
     // int x = 4;
     // int y = 2 + 2;
     // BOOST_TEST(x == y);
