@@ -4,9 +4,9 @@ namespace cpplinq::details::traits {
 
 template <typename T>
 struct underlying_column_type {
-  T from_string(const std::string& s);
-  std::string to_string(const T& t);
-  std::string to_string(const std::any& a);
+  static T from_string(const std::string& s) { return {}; }
+  static std::string to_string(const T& t) { return {}; }
+  static std::string to_string(const std::any& a) { return {}; }
 };
 
 }  // namespace cpplinq::details::traits

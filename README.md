@@ -1,10 +1,10 @@
 # cpplinq
 Library for overlaying an SQL syntax onto cpp data structures.  This will allow for executing various SQL statements against your data structures such as SELECT, INSERT, CALL.  This library will follow a postgres flavor of SQL.
 
-The concept of this library came about as a possible way to white-box blockchain data.  While blockchains are known for transaparency, getting to meaningful data can be hard to do.  This is also coupled with people might not be familiar with toolchains, APIs, languages, etc that are used with the blockchain that is holding the data.  This is why SQL was choosen as the facade, because most people are comfortable with that toolset and language.  This is also allows for future enhancements such as extending the library to mimic a DBMS and conforming to ODBC/JDBC standards, which would allow the blockchain to be integrated into your system as another SQL based data source.
+The concept of this library came about as a possible way to white-box blockchain data.  While blockchains are known for transaparency, getting to meaningful data can be hard to do.  This is also coupled with people might not be familiar with toolchains, APIs, languages, etc that are used with the blockchain that is holding the data.  This is why SQL was choosen as the facade, because most people are comfortable with that toolset and language.  This also allows for future enhancements such as extending the library to mimic a DBMS and conforming to ODBC/JDBC standards, which would allow the blockchain to be integrated into your system as another SQL based data source.
 
 For now, it is much easier to show an example of the library to demonstrate how to use and hopefully give an understanding of how it could be used.  The are a few major concepts that this library is employing:
-1.  Duck typing.  There is an implicit interface that this library requires for integrators, but this interface can be exposed on your existing types with minimal changes.  One of the great features of CPP templates is duck type, "if it walks like a duck and talks like a duck, it's a duck", or in our context, if the type has a method named the same as the method required by the API and matches the function signature, then it must be a type compatible with us.
+1.  Duck typing.  There is an implicit interface that this library requires for integrators, but this interface can be exposed on your existing types with minimal changes.  One of the great features of CPP templates is duck typing, "if it walks like a duck and talks like a duck, it's a duck", or in our context, if the type has a method named the same as the method required by the API and matches the function signature, then it must be a type compatible with us.
 2.  Type traits.  This is a solid design pattern globally accepted by the CPP community that allows encapsulation of most of this information needed by cpplinq.  This nice thing about this is that the information is also available at compile time.
 3.  Macros.  Most of this library is built on the concept of code generation and that is exactly what Macros give us.
 
@@ -132,7 +132,7 @@ struct table_index {
 // 3.  The "index" type returned must conform to the range concept.
 // 4.  As the development of this library progresses, there may be additional concepts centered around secondary indices.
 struct foo_table {
-    friend class table_index<foo_table, uint64_t>;
+    friend struct table_index<foo_table, uint64_t>;
 
     using record_type = foo_record;
     using backing_store = std::vector<record_type>;
@@ -178,7 +178,7 @@ struct foo_table {
 
 // This makes the table known to cpplinq.
 DECLARE_TABLE("foo_table", foo_table, foo_record,
-  ((id, uint64_t)(foo, std::string)(bar, float)(foobar, std::vector<std::string>)));
+  ((id, uint64_t))((foo, std::string))((bar, float))((foobar, std::vector<std::string>)), ());
 
 ...
 
@@ -189,4 +189,161 @@ DECLARE_TABLE("foo_table", foo_table, foo_record,
 auto context = cpplinq::sql_context{};
 auto cursor = context.execute("SELECT foo, bar, foobar FROM foo_table WHERE id > 100 AND id < 200;");
 
+```
+
+In regards to the `DECLARE_TABLE` macro, it will expand to something like this:
+
+```
+namespace cpplinq::details::traits {
+template <>
+struct column_trait<cpplinq::details::traits::hash("id"),
+                    cpplinq::details::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::details::traits::hash("id");
+  static constexpr auto table_hash =
+      cpplinq::details::traits::hash("foo_table");
+  using column_type = uint64_t;
+  static const auto& name() { return "id"; }
+  static auto& value(const foo_record& r) { return r.id; }
+};
+static auto registered_foo_table_id = []() { return true; }();
+template <>
+struct column_trait<cpplinq::details::traits::hash("foo"),
+                    cpplinq::details::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::details::traits::hash("foo");
+  static constexpr auto table_hash =
+      cpplinq::details::traits::hash("foo_table");
+  using column_type = std::string;
+  static const auto& name() { return "foo"; }
+  static auto& value(const foo_record& r) { return r.foo; }
+};
+static auto registered_foo_table_foo = []() { return true; }();
+template <>
+struct column_trait<cpplinq::details::traits::hash("bar"),
+                    cpplinq::details::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::details::traits::hash("bar");
+  static constexpr auto table_hash =
+      cpplinq::details::traits::hash("foo_table");
+  using column_type = float;
+  static const auto& name() { return "bar"; }
+  static auto& value(const foo_record& r) { return r.bar; }
+};
+static auto registered_foo_table_bar = []() { return true; }();
+template <>
+struct column_trait<cpplinq::details::traits::hash("foobar"),
+                    cpplinq::details::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::details::traits::hash("foobar");
+  static constexpr auto table_hash =
+      cpplinq::details::traits::hash("foo_table");
+  using column_type = std::vector<std::string>;
+  static const auto& name() { return "foobar"; }
+  static auto& value(const foo_record& r) { return r.foobar; }
+};
+static auto registered_foo_table_foobar = []() { return true; }();
+template <>
+struct table_trait<foo_table,
+                   foo_record,
+                   cpplinq::details::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::details::traits::hash("foo_table");
+  using table_type = foo_table;
+  using record_type = foo_record;
+  using type = table_trait<foo_table,
+                           foo_record,
+                           cpplinq::details::traits::hash("foo_table")>;
+  static const std::string& name() { return "foo_table"; }
+  static const std::vector<std::string>& columns() {
+    static const auto columns_ = std::vector<std::string>{
+        "id",
+        "foo",
+        "bar",
+        "foobar",
+    };
+    return columns_;
+  }
+  template <typename Functor>
+  static void invoke(const std::string& column_name, Functor f) {
+    if (column_name == "id") {
+      auto trait_instance =
+          column_trait<cpplinq::details::traits::hash("id"),
+                       cpplinq::details::traits::hash("foo_table")>{};
+      f(trait_instance);
+      return;
+    }
+    if (column_name == "foo") {
+      auto trait_instance =
+          column_trait<cpplinq::details::traits::hash("foo"),
+                       cpplinq::details::traits::hash("foo_table")>{};
+      f(trait_instance);
+      return;
+    }
+    if (column_name == "bar") {
+      auto trait_instance =
+          column_trait<cpplinq::details::traits::hash("bar"),
+                       cpplinq::details::traits::hash("foo_table")>{};
+      f(trait_instance);
+      return;
+    }
+    if (column_name == "foobar") {
+      auto trait_instance =
+          column_trait<cpplinq::details::traits::hash("foobar"),
+                       cpplinq::details::traits::hash("foo_table")>{};
+      f(trait_instance);
+      return;
+    }
+  }
+  static std::any column_value(const std::string& column_name,
+                               const record_type& record) {
+    auto result = std::any{};
+    invoke(column_name,
+           [&](const auto& trait) { result = trait.value(record); });
+    return result;
+  }
+  static std::any from_string(const std::string& column_name,
+                              const std::string& value) {
+    auto result = std::any{};
+    invoke(column_name, [&](const auto& trait) {
+      result =
+          underlying_column_type_t<declytpe(trait)::column_type>::from_string(
+              value);
+    });
+    return result;
+  }
+  static std::string to_string(const std::string& column_name,
+                               const record_type& record) {
+    auto result = std::string{};
+    invoke(column_name, [&](const auto& trait) {
+      const auto& value = trait.value(record);
+      result =
+          underlying_column_type_t<decltype(trait)::column_type>::to_string(
+              value);
+    });
+    return result;
+  }
+  static bool evaluate(
+      const record_type& record,
+      const cpplinq::details::operators::expression_tree& expression) {
+    return evaluate<type>(record, expression);
+  }
+  static std::unordered_set<cpplinq::details::operators::comparison_result>
+  evaluate(const std::string& column_name,
+           const record_type& record,
+           const std::any& value) {
+    auto result =
+        std::unordered_set<cpplinq::details::operators::comparison_result>{};
+    invoke(column_name, [&](const auto& trait) {
+      const auto& column_value = trait.value(record);
+      const auto& op_value =
+          std::any_cast<decltype(trait)::column_type&>(value);
+      result = evaluate(column_value, op_value);
+    });
+    return result;
+  }
+};
+static auto registered_foo_table = []() {
+  using trait = table_trait<foo_table, foo_record,
+                            cpplinq::details::traits::hash("foo_table")>;
+  cpplinq::details::table_registry::instance().add(
+      "foo_table", cpplinq::details::traits::any_table<trait>{});
+  return true;
+}();
+}  // namespace cpplinq::details::traits
 ```

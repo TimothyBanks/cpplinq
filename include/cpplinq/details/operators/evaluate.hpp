@@ -2,6 +2,7 @@
 #include <cpplinq/details/operators/expression_tree.hpp>
 #include <cpplinq/details/operators/operators.hpp>
 #include <cpplinq/details/regex.hpp>
+#include <unordered_set>
 
 namespace cpplinq::details::operators {
 
@@ -9,15 +10,17 @@ enum class comparison_result { less_than, greater_than, equal, not_equal };
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
+              operator_ptr& op);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
               and_operator& op);
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              between& op);
+bool evaluate(const typename Table_trait::record_type& record, between& op);
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              equal_to& op);
+bool evaluate(const typename Table_trait::record_type& record, equal_to& op);
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
@@ -45,28 +48,65 @@ bool evaluate(const typename Table_trait::record_type& record,
               less_than_equal& op);
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              less_than& op);
+bool evaluate(const typename Table_trait::record_type& record, less_than& op);
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record, like& op);
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              not_equal& op);
+bool evaluate(const typename Table_trait::record_type& record, not_equal& op);
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
               not_operator& op);
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              or_operator& op);
+bool evaluate(const typename Table_trait::record_type& record, or_operator& op);
 
 template <typename T, typename U = T>
-std::vector<cpplinq::details::operators::comparison_result> evaluate(
+std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
     const T& left,
     const U& right);
+
+template <typename Table_trait>
+bool evaluate(const typename Table_trait::record_type& record,
+              operator_ptr& op) {
+  switch (op->type) {
+    case cpplinq::details::operators::operator_type::and_:
+      return evaluate<Table_trait>(record, static_cast<and_operator&>(*op));
+    case cpplinq::details::operators::operator_type::between:
+      return evaluate<Table_trait>(record, static_cast<between&>(*op));
+    case cpplinq::details::operators::operator_type::equal_to:
+      return evaluate<Table_trait>(record, static_cast<equal_to&>(*op));
+    case cpplinq::details::operators::operator_type::greater_than_equal:
+      return evaluate<Table_trait>(record,
+                                   static_cast<greater_than_equal&>(*op));
+    case cpplinq::details::operators::operator_type::greater_than:
+      return evaluate<Table_trait>(record, static_cast<greater_than&>(*op));
+    case cpplinq::details::operators::operator_type::group:
+      return evaluate<Table_trait>(record, static_cast<group&>(*op));
+    case cpplinq::details::operators::operator_type::ilike:
+      return evaluate<Table_trait>(record, static_cast<ilike&>(*op));
+    case cpplinq::details::operators::operator_type::in:
+      return evaluate<Table_trait>(record, static_cast<in&>(*op));
+    case cpplinq::details::operators::operator_type::is:
+      return false;
+    //   return evaluate<Table_trait>(record, static_cast<is&>(*op));
+    case cpplinq::details::operators::operator_type::less_than_equal:
+      return evaluate<Table_trait>(record, static_cast<less_than_equal&>(*op));
+    case cpplinq::details::operators::operator_type::less_than:
+      return evaluate<Table_trait>(record, static_cast<less_than&>(*op));
+    case cpplinq::details::operators::operator_type::like:
+      return evaluate<Table_trait>(record, static_cast<like&>(*op));
+    case cpplinq::details::operators::operator_type::not_equal:
+      return evaluate<Table_trait>(record, static_cast<not_equal&>(*op));
+    case cpplinq::details::operators::operator_type::not_:
+      return evaluate<Table_trait>(record, static_cast<not_operator&>(*op));
+    case cpplinq::details::operators::operator_type::or_:
+      return evaluate<Table_trait>(record, static_cast<or_operator&>(*op));
+  }
+  return false;
+}
 
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record,
@@ -76,8 +116,7 @@ bool evaluate(const typename Table_trait::record_type& record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              between& op) {
+bool evaluate(const typename Table_trait::record_type& record, between& op) {
   if (!op.cached_begin) {
     op.cached_begin = Table_trait::from_string(op.column, op.begin);
   }
@@ -106,8 +145,7 @@ bool evaluate(const typename Table_trait::record_type& record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              equal_to& op) {
+bool evaluate(const typename Table_trait::record_type& record, equal_to& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
@@ -143,19 +181,17 @@ bool evaluate(const typename Table_trait::record_type& record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              group& op) {
+bool evaluate(const typename Table_trait::record_type& record, group& op) {
   return evaluate<Table_trait>(record, op.root);
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              ilike& op) {
+bool evaluate(const typename Table_trait::record_type& record, ilike& op) {
   if (!op.cached_value) {
     op.cached_value = regex::to_regex(op.value);
   }
   return regex::match(Table_trait::to_string(op.column_name, record),
-                      *(op.cached_value), false);
+                      std::any_cast<std::string&>(*(op.cached_value)), false);
 }
 
 template <typename Table_trait>
@@ -188,8 +224,7 @@ bool evaluate(const typename Table_trait::record_type& record,
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              less_than& op) {
+bool evaluate(const typename Table_trait::record_type& record, less_than& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
@@ -203,12 +238,11 @@ bool evaluate(const typename Table_trait::record_type& record, like& op) {
     op.cached_value = regex::to_regex(op.value);
   }
   return regex::match(Table_trait::to_string(op.column_name, record),
-                      *(op.cached_value), true);
+                      std::any_cast<std::string&>(*(op.cached_value)), true);
 }
 
 template <typename Table_trait>
-bool evaluate(const typename Table_trait::record_type& record,
-              not_equal& op) {
+bool evaluate(const typename Table_trait::record_type& record, not_equal& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
@@ -230,20 +264,21 @@ bool evaluate(const typename Table_trait::record_type& record,
 }
 
 template <typename T, typename U>
-std::vector<cpplinq::details::operators::comparison_result> evaluate(
+std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
     const T& left,
     const U& right) {
-  auto result = std::vector<cpplinq::details::operators::comparison_result>{};
+  auto result =
+      std::unordered_set<cpplinq::details::operators::comparison_result>{};
   if (left < right) {
-    result.emplace_back(cpplinq::details::operators::comparison_result::less_than);
+    result.emplace(cpplinq::details::operators::comparison_result::less_than);
   } else if (left > right) {
-    result.emplace_back(
+    result.emplace(
         cpplinq::details::operators::comparison_result::greater_than);
   }
   if (left == right) {
-    result.emplace_back(cpplinq::details::operators::comparison_result::equal);
+    result.emplace(cpplinq::details::operators::comparison_result::equal);
   } else {
-    result.emplace_back(cpplinq::details::operators::comparison_result::not_equal);
+    result.emplace(cpplinq::details::operators::comparison_result::not_equal);
   }
   return result;
 }

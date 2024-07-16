@@ -3,10 +3,6 @@
 
 namespace cpplinq::details::traits {
 
-template <typename Table_trait>
-any_table::any_table(std::nullptr_t)
-    : ptr{std::make_shared<table<Table_trait>>()} {}
-
 const std::string& any_table::name() const {
   if (!ptr) {
     throw cpplinq::details::cpplinq_exception{"Invalid table state"};

@@ -7,6 +7,7 @@
 #include <cpplinq/details/operators/group.hpp>
 #include <cpplinq/details/operators/ilike.hpp>
 #include <cpplinq/details/operators/in.hpp>
+#include <cpplinq/details/operators/is.hpp>
 #include <cpplinq/details/operators/less_than.hpp>
 #include <cpplinq/details/operators/less_than_equal.hpp>
 #include <cpplinq/details/operators/like.hpp>

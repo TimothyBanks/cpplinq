@@ -207,6 +207,7 @@ operator_ptr make_operator(std::string& sql) {
 
 operator_ptr make_and_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<and_operator>();
+  op->type = cpplinq::details::operators::operator_type::and_;
   op->left_operand = make_operator(left);
   op->right_operand = make_operator(right);
   return op;
@@ -214,6 +215,7 @@ operator_ptr make_and_operator(std::string& left, std::string& right) {
 
 operator_ptr make_between(std::string& left, std::string& right) {
   auto op = std::make_unique<between>();
+  op->type = cpplinq::details::operators::operator_type::between;
   op->column = std::move(cpplinq::details::string::trim(left));
   right = cpplinq::details::string::trim(right);
   auto tokens = regex::split(right, " AND ");
@@ -227,6 +229,7 @@ operator_ptr make_between(std::string& left, std::string& right) {
 
 operator_ptr make_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<equal_to>();
+  op->type = cpplinq::details::operators::operator_type::equal_to;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -240,6 +243,7 @@ expression_tree make_expression_tree(std::string sql) {
 
 operator_ptr make_greater_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than_equal>();
+  op->type = cpplinq::details::operators::operator_type::greater_than_equal;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -247,6 +251,7 @@ operator_ptr make_greater_than_equal(std::string& left, std::string& right) {
 
 operator_ptr make_greater_than(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than>();
+  op->type = cpplinq::details::operators::operator_type::greater_than;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -256,12 +261,14 @@ operator_ptr make_group(std::string& sql) {
   auto group_sql = sql.substr(1);
   group_sql.pop_back();
   auto op = std::make_unique<group>();
+  op->type = cpplinq::details::operators::operator_type::group;
   op->root = make_operator(group_sql);
   return op;
 }
 
 operator_ptr make_ilike(std::string& left, std::string& right) {
   auto op = std::make_unique<ilike>();
+  op->type = cpplinq::details::operators::operator_type::ilike;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -269,6 +276,7 @@ operator_ptr make_ilike(std::string& left, std::string& right) {
 
 operator_ptr make_in(std::string& left, std::string& right) {
   auto op = std::make_unique<in>();
+  op->type = cpplinq::details::operators::operator_type::in;
   op->column = std::move(cpplinq::details::string::trim(left));
   right = std::move(cpplinq::details::string::trim(right));
   right = right.substr(1);
@@ -286,6 +294,7 @@ operator_ptr make_is(std::string& left, std::string& right) {
 
 operator_ptr make_less_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than_equal>();
+  op->type = cpplinq::details::operators::operator_type::less_than_equal;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -293,6 +302,7 @@ operator_ptr make_less_than_equal(std::string& left, std::string& right) {
 
 operator_ptr make_less_than(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than>();
+  op->type = cpplinq::details::operators::operator_type::less_than;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -300,6 +310,7 @@ operator_ptr make_less_than(std::string& left, std::string& right) {
 
 operator_ptr make_like(std::string& left, std::string& right) {
   auto op = std::make_unique<like>();
+  op->type = cpplinq::details::operators::operator_type::like;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -307,6 +318,7 @@ operator_ptr make_like(std::string& left, std::string& right) {
 
 operator_ptr make_not_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<not_equal>();
+  op->type = cpplinq::details::operators::operator_type::not_equal;
   op->column_name = std::move(cpplinq::details::string::trim(left));
   op->value = std::move(cpplinq::details::string::trim(right));
   return op;
@@ -318,6 +330,7 @@ operator_ptr make_not_operator(std::string& left, std::string& right) {
 
 operator_ptr make_or_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<or_operator>();
+  op->type = cpplinq::details::operators::operator_type::or_;
   op->left_operand = make_operator(cpplinq::details::string::trim(left));
   op->right_operand = make_operator(cpplinq::details::string::trim(right));
   return op;

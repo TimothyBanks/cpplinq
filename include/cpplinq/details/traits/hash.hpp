@@ -4,7 +4,18 @@
 
 namespace cpplinq::details::traits {
 
-constexpr size_t hash(const char* str, size_t hash_value = 0xcbf29ce484222325);
-constexpr size_t hash(const std::string& str);
+constexpr size_t hash(const char* str,
+                      size_t length,
+                      size_t running_hash = 2166136261u) {
+  return length == 0
+             ? running_hash
+             : hash(str + 1, length - 1,
+                    (running_hash ^ static_cast<size_t>(*str)) * 16777619u);
+}
+
+template <size_t N>
+constexpr size_t hash(const char (&str)[N]) {
+  return hash(str, N - 1);
+}
 
 }  // namespace cpplinq::details::traits

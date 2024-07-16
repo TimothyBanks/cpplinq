@@ -69,7 +69,7 @@ struct any_table {
   any_table(any_table&&) = default;
 
   template <typename Table_trait>
-  any_table(std::nullptr_t);
+  any_table(Table_trait) : ptr{std::make_shared<table<Table_trait>>()} {}
 
   any_table& operator=(const any_table&) = default;
   any_table& operator=(any_table&&) = default;

@@ -4,7 +4,7 @@
 
 namespace cpplinq::details::operators {
 
-struct is: public operator_base {
+struct is : public operator_base {
   std::string column;
   operator_ptr op;
 };

@@ -22,7 +22,7 @@ struct any_procedure {
   any_procedure(const any_procedure&) = default;
   any_procedure(any_procedure&&) = default;
   template <typename Procedure_trait>
-  any_procedure(std::nullptr_t);
+  any_procedure(Procedure_trait);
 
   any_procedure& operator=(const any_procedure&) = default;
   any_procedure& operator=(any_procedure&&) = default;

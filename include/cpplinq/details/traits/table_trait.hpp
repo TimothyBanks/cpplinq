@@ -4,6 +4,7 @@
 #include <cpplinq/details/operators/evaluate.hpp>
 #include <cpplinq/details/operators/expression_tree.hpp>
 #include <cpplinq/details/traits/column_trait.hpp>
+#include <cpplinq/details/traits/underlying_column_type.hpp>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -27,7 +28,7 @@
 //         auto result = std::any{};
 //         invoke(column_name, [&](const auto& trait) {
 //             result =
-//             underlying_column_type_t<declytpe(trait)::column_type>::from_string(value);
+//             underlying_column_type<decltype(trait)::column_type>::from_string(value);
 //         });
 //         return result;
 //     }
@@ -39,7 +40,7 @@
 //         invoke(column_name, [&](const auto& trait) {
 //             const auto& value = trait.value(record);
 //             result =
-//             underlying_column_type_t<decltype(trait)::column_type>::to_string(value);
+//             underlying_column_type<decltype(trait)::column_type>::to_string(value);
 //         });
 //         return result;
 //     }
@@ -94,9 +95,9 @@
 
 #define GENERATE_INVOKE_BLOCK(__ignored__, __table_name__, __column_tuple__) \
   if (column_name ==                                                         \
-      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple))) {       \
+      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))) {     \
     auto trait_instance = column_trait<cpplinq::details::traits::hash(       \
-        BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple))),      \
+        BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))),    \
         cpplinq::details::traits::hash(__table_name__)>{};                   \
     f(trait_instance);                                                       \
     return;                                                                  \
@@ -105,9 +106,9 @@
 #define DECLARE_TABLE(__table_name__, __table_type__, __record_type__,         \
                       __columns__, __indices__)                                \
   namespace cpplinq::details::traits {                                         \
-  BOOST_PP_SEQ_FOR_EACH(__columns__,                                           \
-                        (__table_name__, __record_type__),                     \
-                        DECLARE_COLUMN);                                       \
+  BOOST_PP_SEQ_FOR_EACH(DECLARE_COLUMN,                                        \
+                        (__table_name__, __table_type__, __record_type__),     \
+                        __columns__)                                           \
   template <>                                                                  \
   struct table_trait<__table_type__,                                           \
                      __record_type__,                                          \
@@ -116,8 +117,14 @@
         cpplinq::details::traits::hash(__table_name__);                        \
     using table_type = __table_type__;                                         \
     using record_type = __record_type__;                                       \
+    using type = table_trait<__table_type__,                                   \
+                             __record_type__,                                  \
+                             cpplinq::details::traits::hash(__table_name__)>;  \
                                                                                \
-    static const std::string& name() { return __table_name__; }                \
+    static const std::string& name() {                                         \
+      static const auto name = std::string{__table_name__};                    \
+      return name;                                                             \
+    }                                                                          \
     static const std::vector<std::string>& columns() {                         \
       static const auto columns_ = std::vector<std::string>{                   \
           BOOST_PP_SEQ_FOR_EACH(GET_COLUMN_NAME, _, __columns__)};             \
@@ -125,7 +132,8 @@
     }                                                                          \
     template <typename Functor>                                                \
     static void invoke(const std::string& column_name, Functor f) {            \
-      BOOST_PP_SEQ_FOR_EACH(GENERATE_INVOKE_BLOCK, __table_name__, __columns)  \
+      BOOST_PP_SEQ_FOR_EACH(GENERATE_INVOKE_BLOCK, __table_name__,             \
+                            __columns__)                                       \
     }                                                                          \
     static std::any column_value(const std::string& column_name,               \
                                  const record_type& record) {                  \
@@ -138,8 +146,8 @@
                                 const std::string& value) {                    \
       auto result = std::any{};                                                \
       invoke(column_name, [&](const auto& trait) {                             \
-        result = underlying_column_type_t<declytpe(                            \
-            trait)::column_type>::from_string(value);                          \
+        result = underlying_column_type<typename std::decay_t<                 \
+            decltype(trait)>::column_type>::from_string(value);                \
       });                                                                      \
       return result;                                                           \
     }                                                                          \
@@ -148,16 +156,15 @@
       auto result = std::string{};                                             \
       invoke(column_name, [&](const auto& trait) {                             \
         const auto& value = trait.value(record);                               \
-        result =                                                               \
-            underlying_column_type_t<decltype(trait)::column_type>::to_string( \
-                value);                                                        \
+        result = underlying_column_type<typename std::decay_t<                 \
+            decltype(trait)>::column_type>::to_string(value);                  \
       });                                                                      \
       return result;                                                           \
     }                                                                          \
     static bool evaluate(                                                      \
         const record_type& record,                                             \
-        const cpplinq::details::operators::expression_tree& expression) {      \
-      return evaluate<decltype(*this)>(record, expression);                    \
+        cpplinq::details::operators::expression_tree& expression) {            \
+      return cpplinq::details::operators::evaluate<type>(record, expression);  \
     }                                                                          \
     static std::unordered_set<cpplinq::details::operators::comparison_result>  \
     evaluate(const std::string& column_name,                                   \
@@ -167,18 +174,20 @@
           cpplinq::details::operators::comparison_result>{};                   \
       invoke(column_name, [&](const auto& trait) {                             \
         const auto& column_value = trait.value(record);                        \
-        const auto& op_value =                                                 \
-            std::any_cast<decltype(trait)::column_type&>(value);               \
-        result = evaluate(column_value, op_value);                             \
+        const auto& op_value = std::any_cast<                                  \
+            const typename std::decay_t<decltype(trait)>::column_type&>(       \
+            value);                                                            \
+        result =                                                               \
+            cpplinq::details::operators::evaluate(column_value, op_value);     \
       });                                                                      \
       return result;                                                           \
     }                                                                          \
   };                                                                           \
-  static auto BOOST_PP_CAT(registered_, __table_name__) = []() {               \
+  static auto BOOST_PP_CAT(registered_, __table_type__) = []() {               \
     using trait = table_trait<__table_type__, __record_type__,                 \
                               cpplinq::details::traits::hash(__table_name__)>; \
-    cpplinq::details::table_registry::instance().add(__table_name__,           \
-                                                     any_table<trait>{});      \
+    cpplinq::details::table_registry::instance().add(                          \
+        __table_name__, cpplinq::details::traits::any_table{trait{}});         \
     return true;                                                               \
   }();                                                                         \
   }  // namespace cpplinq::details::traits

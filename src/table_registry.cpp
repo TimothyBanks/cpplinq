@@ -24,7 +24,8 @@ traits::any_table& table_registry::find(const std::string& table_name) {
   return it->second;
 }
 
-const traits::any_table& table_registry::find(const std::string& table_name) const {
+const traits::any_table& table_registry::find(
+    const std::string& table_name) const {
   auto it = tables.find(table_name);
   if (it == std::end(tables)) {
     throw cpplinq::details::cpplinq_exception{"Table not found"};
