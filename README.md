@@ -186,8 +186,7 @@ DECLARE_TABLE("foo_table", foo_table, foo_record,
 ...
 
 // Then as a simple example of how this could be used
-auto context = cpplinq::sql_context{};
-auto cursor = context.execute("SELECT foo, bar, foobar FROM foo_table WHERE id > 100 AND id < 200;");
+auto cursor = cpplinq::sql_context::execute("SELECT foo, bar, foobar FROM foo_table WHERE id > 100 AND id < 200;");
 
 ```
 
