@@ -31,9 +31,8 @@
     static const auto& name() {                                               \
       return BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__)); \
     }                                                                         \
-    \  
-    static auto&                                                              \
-    value(const BOOST_PP_TUPLE_ELEM(2, 1, __user_defined_tuple__) & r) {      \
+    static auto& value(                                                       \
+        const BOOST_PP_TUPLE_ELEM(2, 1, __user_defined_tuple__) & r) {        \
       return r.BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__);                   \
     }                                                                         \
   };                                                                          \

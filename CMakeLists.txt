@@ -17,9 +17,9 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-if(CPPLINQ_BUILD_TESTS)
+# if(CPPLINQ_BUILD_TESTS)
     add_subdirectory(tests)
-endif()
+# endif()
 
 add_library(cpplinq STATIC  
     src/call_context.cpp 

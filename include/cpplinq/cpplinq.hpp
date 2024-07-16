@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cpplinq/cursor.hpp>
 #include <cpplinq/details/aggregates/count.hpp>
 #include <cpplinq/details/aggregates/sum.hpp>
 #include <cpplinq/details/call_context.hpp>

@@ -12,14 +12,14 @@ template <typename Table_trait>
 cpplinq::details::cursor execute(const select_context& context) {
   // TODO:  Add in the RANGE clause so the user can specify which index.
   // Currently this will iterate the entire table.
-  auto& primary_index = Table_trait::table_type::instance().primary_index();
+  auto& index = Table_trait::table_type::instance().primary_index();
 
   auto cursor = cpplinq::details::cursor{};
   cursor.columns = context.columns;
 
-  for (auto it = std::begin(primary_index); it != std::end(primary_index);
-       ++it) {
+  for (auto it = std::begin(index); it != std::end(index); ++it) {
     auto& value = *it;
+
     // TODO:  Aliases for columns need to be factored in during evaluation.
     if (!Table_trait::evaluate(value, context.et)) {
       continue;

@@ -1,5 +1,5 @@
 add_executable(cpplinq_tests
-  sql_context_tests.cpp
+  select_context_tests.cpp
 )
 
 target_link_libraries(cpplinq_tests cpplinq)
