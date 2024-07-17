@@ -64,6 +64,9 @@ std::vector<std::string> split_(const std::string& s,
 
   auto left_over = std::string{};
   while (iter != end) {
+    if (!left_over.empty()) {
+      left_over += token;
+    }
     left_over += *iter;
     ++iter;
   }

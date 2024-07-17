@@ -69,14 +69,13 @@ std::vector<std::string> pop_groups(std::string& sql) {
         position = i;
       }
       ++count;
-      new_sql += sql[i];
     } else if (sql[i] == ')' && --count == 0) {
-      position = not_set;
       auto length = i - position + 1;
       auto grouping = sql.substr(position, length);
       new_sql += "{" + std::to_string(result.size()) + "}";
       result.emplace_back(std::move(grouping));
-    } else {
+      position = not_set;
+    } else if (position == not_set) {
       new_sql += sql[i];
     }
   }
@@ -101,7 +100,9 @@ operator_ptr make_operator(std::string& sql) {
   if (sql == "{0}") {
     // The whole thing is a grouping
     push_groups(sql, groups);
-    return make_group(sql);
+    auto op = make_group(sql);
+    op->original_statement = sql;
+    return op;
   }
 
   auto make = [&](auto token, auto functor) {
@@ -159,7 +160,7 @@ operator_ptr make_operator(std::string& sql) {
     return ptr;
   }
 
-  if (auto ptr = make(" <> ", [](auto& left, auto& right) {
+  if (auto ptr = make(" = ", [](auto& left, auto& right) {
         return make_equal(left, right);
       })) {
     return ptr;
@@ -231,7 +232,7 @@ operator_ptr make_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<equal_to>();
   op->type = cpplinq::details::operators::operator_type::equal_to;
   op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->value = std::move(cpplinq::details::string::trim(right)); 
   return op;
 }
 
