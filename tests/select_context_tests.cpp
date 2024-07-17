@@ -228,12 +228,14 @@ struct foobar_table {
   void push(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
+    primary_index_.push(std::make_tuple(record.identifier), records_.size() - 1);
   }
 
   void pop(size_t index) {
     if (index >= records_.size()) {
       return;
     }
+    primary_index_.pop(std::make_tuple(records_[index].identifier));
     records_.erase(std::begin(records_) + index);
   }
 
