@@ -27,102 +27,126 @@ struct foo_record {
 // to that concept.
 template <typename Table, typename... T>
 struct table_index {
-    using table_index_type = std::tuple<T...>;
-    using table_type       = Table;
-    using backing_type     = std::map<table_index_type, size_t>;
+  using table_index_type = std::tuple<T...>;
+  using table_type = Table;
+  using backing_type = std::map<table_index_type, size_t>;
 
-    backing_type index_;
-    const table_type* table_;
+  backing_type index_;
+  table_type* table_;
 
-    table_index() = default;
-    table_index(const table_index&) = default;
-    table_index(table_index&&) = default;
+  table_index() = default;
+  table_index(const table_index&) = default;
+  table_index(table_index&&) = default;
 
-    table_index(const table_type& table) : table_{&table} {}
+  table_index(table_type& table) : table_{&table} {}
 
-    table_index& operator=(const table_index&) = default;
-    table_index& operator=(table_index&&) = default;
+  table_index& operator=(const table_index&) = default;
+  table_index& operator=(table_index&&) = default;
 
-    void push(table_index_type key, size_t position) {
-        index_.emplace(std::move(key), position);
+  void push(table_index_type key, size_t position) {
+    index_.emplace(std::move(key), position);
+  }
+
+  void pop(const table_index_type& key) { index_.erase(key); }
+
+  struct iterator {
+    typename backing_type::iterator begin_;
+    typename backing_type::iterator end_;
+    mutable typename backing_type::iterator it_;
+    table_type* table_;
+
+    iterator() = default;
+    iterator(const iterator&) = default;
+    iterator(iterator&&) = default;
+
+    iterator(table_type& table,
+             typename backing_type::iterator begin,
+             typename backing_type::iterator end,
+             typename backing_type::iterator it)
+        : table_{&table},
+          begin_{std::move(begin)},
+          end_{std::move(end)},
+          it_{std::move(it)} {}
+
+    iterator& operator=(const iterator&) = default;
+    iterator& operator=(iterator&&) = default;
+
+    typename table_type::record_type& operator*() {
+      auto position = it_->second;
+      if (position >= table_->data().size()) {
+        throw "iterator out of bounds";
+      }
+      return table_->data()[position];
     }
 
-    void pop(const table_index_type& key) {
-        index_.remove(key);
+    const typename table_type::record_type& operator*() const {
+      auto position = it_->second;
+      if (position >= table_->data().size()) {
+        throw "iterator out of bounds";
+      }
+      return *(table_->data()[position]);
     }
 
-    struct iterator {
-        typename backing_type::iterator begin_;
-        typename backing_type::iterator end_;
-        mutable typename backing_type::iterator it_;
-        table_type* table_;
-
-        iterator() = default;
-        iterator(const iterator&) = default;
-        iterator(iterator&&) = default;
-
-        iterator(table_type& table, typename backing_type::iterator begin, typename backing_type::iterator end, typename backing_type::iterator it)
-            : table_{&table}, begin_{std::move(begin)}, end_{std::move(end)}, it_{std::move(it)} {}
-
-        iterator& operator=(const iterator&) = default;
-        iterator& operator=(iterator&&) = default;
-
-        typename table_type::record_type& operator*() { 
-            auto position = it_.second;
-            if (position >= table_->data().size()) {
-                throw "iterator out of bounds";
-            }
-            return *(table_->data()[position]); 
-        }
-
-        const typename table_type::record_type& operator*() const  { 
-            auto position = it_.second;
-            if (position >= table_->data().size()) {
-                throw "iterator out of bounds";
-            }
-            return *(table_->data()[position]); 
-        }
-
-        iterator& operator++() { ++it_; return *this; }
-        iterator& operator--() { --it_; return *this; }
-        const iterator& operator++() const { ++it_; return *this; }
-        const iterator& operator--() const { --it_; return *this; }
-
-        bool operator==(const iterator& other) const { return it_ == other.it_; }
-        bool operator!=(const iterator& other) const { return it_ != other.it_; }
-    };
-
-    iterator begin() {
-        return iterator{*table_, std::begin(index_), std::end(index_), std::begin(index_)};
+    iterator& operator++() {
+      ++it_;
+      return *this;
+    }
+    iterator& operator--() {
+      --it_;
+      return *this;
+    }
+    const iterator& operator++() const {
+      ++it_;
+      return *this;
+    }
+    const iterator& operator--() const {
+      --it_;
+      return *this;
     }
 
-    iterator end() {
-        return iterator{*table_, std::begin(index_), std::end(index_), std::end(index_)};
-    }
+    bool operator==(const iterator& other) const { return it_ == other.it_; }
+    bool operator!=(const iterator& other) const { return it_ != other.it_; }
+  };
 
-    iterator lower_bound(const table_index_type& key) {
-        return iterator{*table_, std::begin(index_), std::end(index_), index_.lower_bound(key)};
-    }
+  iterator begin() {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    std::begin(index_)};
+  }
 
-    iterator upper_bound(const table_index_type& key) {
-        return iterator{*table_, std::begin(index_), std::end(index_), index_.upper_bound(key)};
-    }
+  iterator end() {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    std::end(index_)};
+  }
 
-    const iterator begin() const {
-        return iterator{*table_, std::begin(index_), std::end(index_), std::begin(index_)};
-    }
+  iterator lower_bound(const table_index_type& key) {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    index_.lower_bound(key)};
+  }
 
-    const iterator end() const{
-        return iterator{*table_, std::begin(index_), std::end(index_), std::end(index_)};
-    }
+  iterator upper_bound(const table_index_type& key) {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    index_.upper_bound(key)};
+  }
 
-    const iterator lower_bound(const table_index_type& key) const {
-        return iterator{*table_, std::begin(index_), std::end(index_), index_.lower_bound(key)};
-    }
+  const iterator begin() const {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    std::begin(index_)};
+  }
 
-    const iterator upper_bound(const table_index_type& key) const {
-        return iterator{*table_, std::begin(index_), std::end(index_), index_.upper_bound(key)};
-    }
+  const iterator end() const {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    std::end(index_)};
+  }
+
+  const iterator lower_bound(const table_index_type& key) const {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    index_.lower_bound(key)};
+  }
+
+  const iterator upper_bound(const table_index_type& key) const {
+    return iterator{*table_, std::begin(index_), std::end(index_),
+                    index_.upper_bound(key)};
+  }
 };
 
 // cpplinq utilizes a concept called duck typing.
@@ -132,48 +156,49 @@ struct table_index {
 // 3.  The "index" type returned must conform to the range concept.
 // 4.  As the development of this library progresses, there may be additional concepts centered around secondary indices.
 struct foo_table {
-    friend struct table_index<foo_table, uint64_t>;
+  friend class table_index<foo_table, size_t>;
 
-    using record_type = foo_record;
-    using backing_store = std::vector<record_type>;
+  using record_type = foo_record;
+  using backing_store = std::vector<record_type>;
+  using primary_index_type = table_index<foo_table, size_t>;
 
-    table_index<foo_table, uint64_t> primary_index_;
-    backing_store records_;
+  primary_index_type primary_index_;
+  backing_store records_;
 
-    foo_table() : primary_index_{*this} {}
-    foo_table(const foo_table&) = default;
-    foo_table(foo_table&&) = default;
+  foo_table() : primary_index_{*this} {}
+  foo_table(const foo_table&) = default;
+  foo_table(foo_table&&) = default;
 
-    foo_table& operator=(const foo_table&) = default;
-    foo_table& operator=(foo_table&&) = default;
+  foo_table& operator=(const foo_table&) = default;
+  foo_table& operator=(foo_table&&) = default;
 
-    static foo_table& instance() {
-        static auto instance_ = foo_table{};
-        return instance_;
+  static foo_table& instance() {
+    static auto instance_ = foo_table{};
+    return instance_;
+  }
+
+  void push(record_type record) {
+    records_.emplace_back();
+    records_.back() = std::move(record);
+    primary_index_.push(std::make_tuple(record.id), records_.size() - 1);
+  }
+
+  void pop(size_t index) {
+    if (index >= records_.size()) {
+      return;
     }
+    primary_index_.pop(std::make_tuple(records_[index].id));
+    records_.erase(std::begin(records_) + index);
+  }
 
-    void push(record_type record) {
-        records_.emplace_back();
-        records_.back() = std::move(record);
-    }
+  backing_store& data() { return records_; }
+  const backing_store& data() const { return records_; }
 
-    void pop(size_t index) {
-        if (index >= records_.size()) {
-            return;
-        }
-        records_.erase(std::begin(records_) + index);
-    }
+  const primary_index_type& primary_index() const {
+    return primary_index_;
+  }
 
-    backing_store& data() { return records_; }
-    const backing_store& data() const { return records_; }
-
-    const table_index<foo_table, uint64_t>& primary_index() const {
-        return primary_index_;
-    }
-
-    table_index<foo_table, uint64_t>& primary_index() {
-        return primary_index_;
-    }
+  primary_index_type& primary_index() { return primary_index_; }
 };
 
 // This makes the table known to cpplinq.

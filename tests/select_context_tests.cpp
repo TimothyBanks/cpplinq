@@ -32,13 +32,13 @@ struct table_index {
   using backing_type = std::map<table_index_type, size_t>;
 
   backing_type index_;
-  const table_type* table_;
+  table_type* table_;
 
   table_index() = default;
   table_index(const table_index&) = default;
   table_index(table_index&&) = default;
 
-  table_index(const table_type& table) : table_{&table} {}
+  table_index(table_type& table) : table_{&table} {}
 
   table_index& operator=(const table_index&) = default;
   table_index& operator=(table_index&&) = default;
@@ -47,7 +47,7 @@ struct table_index {
     index_.emplace(std::move(key), position);
   }
 
-  void pop(const table_index_type& key) { index_.remove(key); }
+  void pop(const table_index_type& key) { index_.erase(key); }
 
   struct iterator {
     typename backing_type::iterator begin_;
@@ -72,15 +72,15 @@ struct table_index {
     iterator& operator=(iterator&&) = default;
 
     typename table_type::record_type& operator*() {
-      auto position = it_.second;
+      auto position = it_->second;
       if (position >= table_->data().size()) {
         throw "iterator out of bounds";
       }
-      return *(table_->data()[position]);
+      return table_->data()[position];
     }
 
     const typename table_type::record_type& operator*() const {
-      auto position = it_.second;
+      auto position = it_->second;
       if (position >= table_->data().size()) {
         throw "iterator out of bounds";
       }
@@ -182,12 +182,14 @@ struct foo_table {
   void push(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
+    primary_index_.push(std::make_tuple(record.id), records_.size() - 1);
   }
 
   void pop(size_t index) {
     if (index >= records_.size()) {
       return;
     }
+    primary_index_.pop(std::make_tuple(records_[index].id));
     records_.erase(std::begin(records_) + index);
   }
 
@@ -261,26 +263,28 @@ DECLARE_TABLE("foobar_table",
               ());
 
 BOOST_AUTO_TEST_CASE(select_context) {
-  auto ft = foo_table{};
+  auto& ft = foo_table::instance();
 
   for (auto i = size_t{0}; i < 100; ++i) {
     ft.push({
         .id = i,
         .foo = std::to_string(i),
         .bar = static_cast<float>(i),
-        .foobar = {std::to_string(i)}
+        .foobar = {std::to_string(i), std::to_string(i), std::to_string(i)}
     });
   }
 
-  auto fbt = foobar_table{};
+  auto& fbt = foobar_table::instance();
 
   for (auto i = size_t{1000}; i < 1100; ++i) {
     fbt.push({
         .identifier = i,
-        .data = std::to_string(i)
+        .data = std::to_string(i) + std::to_string(i) + std::to_string(i)
     });
   }
 
-  auto cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table");
+  auto cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foobar_table");
+  cursor = cpplinq::sql_context::execute("SELECT indentifier, data FROM foobar_table");
 }

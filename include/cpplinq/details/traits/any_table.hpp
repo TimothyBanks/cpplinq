@@ -9,7 +9,7 @@
 namespace cpplinq::details::traits {
 
 template <typename Table_trait>
-cpplinq::details::cursor execute(const select_context& context) {
+cpplinq::details::cursor execute(select_context& context) {
   // TODO:  Add in the RANGE clause so the user can specify which index.
   // Currently this will iterate the entire table.
   auto& index = Table_trait::table_type::instance().primary_index();
@@ -42,7 +42,7 @@ struct any_table {
     virtual const std::string& name() = 0;
     virtual const std::vector<std::string>& columns() = 0;
     virtual cpplinq::details::cursor execute(
-        const select_context& context) const = 0;
+        select_context& context) const = 0;
   };
 
   template <typename Table_trait>
@@ -56,8 +56,8 @@ struct any_table {
     }
 
     virtual cpplinq::details::cursor execute(
-        const select_context& context) const override {
-      return {};
+        select_context& context) const override {
+      return cpplinq::details::traits::execute<table_trait>(context);
     }
   };
 
@@ -77,7 +77,7 @@ struct any_table {
   const std::string& name() const;
   const std::vector<std::string>& columns() const;
 
-  cpplinq::details::cursor execute(const select_context& context) const;
+  cpplinq::details::cursor execute(select_context& context) const;
 };
 
 }  // namespace cpplinq::details::traits

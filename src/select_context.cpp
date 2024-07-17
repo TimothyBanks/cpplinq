@@ -33,12 +33,14 @@ select_context make_select_context(const std::string& sql) {
   // and popping off the last part of the statement.
   auto tokens = regex::split(sql, " OFFSET ");
   if (tokens.size() > 1) {
-    context.offset = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+    context.offset = static_cast<size_t>(
+        std::atoll(cpplinq::details::string::trim(tokens.back()).c_str()));
   }
 
   tokens = regex::split(tokens.front(), " LIMIT ");
   if (tokens.size() > 1) {
-    context.limit = static_cast<size_t>(std::atoll(tokens.back().c_str()));
+    context.limit = static_cast<size_t>(
+        std::atoll(cpplinq::details::string::trim(tokens.back()).c_str()));
   }
 
   check_unsupported_token(tokens.front(), " ORDER BY ");
@@ -48,7 +50,8 @@ select_context make_select_context(const std::string& sql) {
   tokens = regex::split(tokens.front(), " WHERE ");
   if (tokens.size() > 1) {
     // Build the expression tree from the conditionals in the WHERE
-    context.et = details::operators::make_expression_tree(tokens.back());
+    context.et = details::operators::make_expression_tree(
+        cpplinq::details::string::trim(tokens.back()));
   }
 
   check_unsupported_token(tokens.front(), " JOIN ");
@@ -62,19 +65,21 @@ select_context make_select_context(const std::string& sql) {
                               : std::string{};
   }
 
-  auto& table = cpplinq::details::table_registry::instance().find(context.table_name);
+  auto& table =
+      cpplinq::details::table_registry::instance().find(context.table_name);
 
   check_unsupported_token(tokens.front(), " DISTINCT ");
 
   tokens = regex::split(tokens.front(), "SELECT ");
-  auto column_tokens = regex::split(tokens.back(), ',');
-  if (column_tokens.size() == 1 && cpplinq::details::string::trim(column_tokens.front()) == "*") {
+  auto column_tokens = regex::tokenize(tokens.back(), ',');
+  if (column_tokens.size() == 1 &&
+      cpplinq::details::string::trim(column_tokens.front()) == "*") {
     for (const auto& column_name : table.columns()) {
       context.columns.emplace_back();
       auto& new_column = context.columns.back();
       new_column.name = column_name;
-      new_column.table = 
-          context.table_alias.empty() ? context.table_name : context.table_alias;
+      new_column.table = context.table_alias.empty() ? context.table_name
+                                                     : context.table_alias;
     }
   } else {
     for (auto& c : column_tokens) {
@@ -83,22 +88,25 @@ select_context make_select_context(const std::string& sql) {
       context.columns.emplace_back();
       auto& new_column = context.columns.back();
 
-      // TODO:  If JOIN becomes supported, will need to parse table.column_name in
-      // SELECT.
-      new_column.table =
-          context.table_alias.empty() ? context.table_name : context.table_alias;
+      // TODO:  If JOIN becomes supported, will need to parse table.column_name
+      // in SELECT.
+      new_column.table = context.table_alias.empty() ? context.table_name
+                                                     : context.table_alias;
       new_column.alias = subtokens.size() > 1
-                            ? cpplinq::details::string::trim(subtokens.back())
-                            : std::string{};
+                             ? cpplinq::details::string::trim(subtokens.back())
+                             : std::string{};
 
       auto column_token = subtokens.front();
       subtokens = regex::split(column_token, '(');
       if (subtokens.size() > 1) {
         // This is an aggregate function.
-        new_column.aggregate = subtokens.front();
+        new_column.aggregate =
+            cpplinq::details::string::trim(subtokens.front());
         subtokens = regex::split(subtokens.back(), ')');
         new_column.name =
-            subtokens.front().empty() ? new_column.alias : subtokens.front();
+            subtokens.front().empty()
+                ? new_column.alias
+                : cpplinq::details::string::trim(subtokens.front());
       } else {
         new_column.name = cpplinq::details::string::trim(column_token);
       }

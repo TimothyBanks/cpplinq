@@ -18,7 +18,7 @@ const std::vector<std::string>& any_table::columns() const {
 }
 
 cpplinq::details::cursor any_table::execute(
-    const select_context& context) const {
+    select_context& context) const {
   if (!ptr) {
     throw cpplinq::details::cpplinq_exception{"Invalid table state"};
   }

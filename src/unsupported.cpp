@@ -9,7 +9,8 @@ void check_unsupported_token(const std::string& sql, const std::string& token) {
   if (tokens.size() <= 1) {
     return;
   }
-  throw cpplinq::details::cpplinq_exception{"Token " + token + " is unsupported"};
+  throw cpplinq::details::cpplinq_exception{"Token " + token +
+                                            " is unsupported"};
 }
 
 }  // namespace cpplinq::details

@@ -23,7 +23,8 @@ cpplinq::details::cursor execute(const std::string& sql) {
   }
   if (details::is_select_statement(sql)) {
     auto context = details::make_select_context(sql);
-    auto& table = cpplinq::details::table_registry::instance().find(context.table_name);
+    auto& table =
+        cpplinq::details::table_registry::instance().find(context.table_name);
     return table.execute(context);
   }
   if (details::is_update_statement(sql)) {
