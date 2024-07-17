@@ -63,7 +63,12 @@ bool evaluate(const typename Table_trait::record_type& record,
 template <typename Table_trait>
 bool evaluate(const typename Table_trait::record_type& record, or_operator& op);
 
-template <typename T, typename U = T>
+template <typename T>
+std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
+    const T& left,
+    const T& right);
+
+template <typename T, typename U>
 std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
     const T& left,
     const U& right);
@@ -149,7 +154,7 @@ bool evaluate(const typename Table_trait::record_type& record, equal_to& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  return Table_trait::evaluate(op.column_name, record, op.cached_value)
+  return Table_trait::evaluate(op.column_name, record, *op.cached_value)
              .count(comparison_result::equal) > 0;
 }
 
@@ -169,7 +174,7 @@ bool evaluate(const typename Table_trait::record_type& record,
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  auto result = Table_trait::evaluate(op.column_name, record, op.cached_value);
+  auto result = Table_trait::evaluate(op.column_name, record, *op.cached_value);
   return result.count(comparison_result::greater_than) > 0 ||
          result.count(comparison_result::equal) > 0;
 }
@@ -180,7 +185,7 @@ bool evaluate(const typename Table_trait::record_type& record,
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  auto result = Table_trait::evaluate(op.column_name, record, op.cached_value);
+  auto result = Table_trait::evaluate(op.column_name, record, *op.cached_value);
   return result.count(comparison_result::greater_than) > 0;
 }
 
@@ -222,7 +227,7 @@ bool evaluate(const typename Table_trait::record_type& record,
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  auto result = Table_trait::evaluate(op.column_name, record, op.cached_value);
+  auto result = Table_trait::evaluate(op.column_name, record, *op.cached_value);
   return result.count(comparison_result::less_than) > 0 ||
          result.count(comparison_result::equal) > 0;
 }
@@ -232,7 +237,7 @@ bool evaluate(const typename Table_trait::record_type& record, less_than& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  auto result = Table_trait::evaluate(op.column_name, record, op.cached_value);
+  auto result = Table_trait::evaluate(op.column_name, record, *op.cached_value);
   return result.count(comparison_result::less_than) > 0;
 }
 
@@ -250,7 +255,7 @@ bool evaluate(const typename Table_trait::record_type& record, not_equal& op) {
   if (!op.cached_value) {
     op.cached_value = Table_trait::from_string(op.column_name, op.value);
   }
-  auto result = Table_trait::evaluate(op.column_name, record, op.cached_value);
+  auto result = Table_trait::evaluate(op.column_name, record, *op.cached_value);
   return result.count(comparison_result::not_equal) > 0;
 }
 
@@ -267,10 +272,10 @@ bool evaluate(const typename Table_trait::record_type& record,
          evaluate<Table_trait>(record, op.right_operand);
 }
 
-template <typename T, typename U>
+template <typename T>
 std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
     const T& left,
-    const U& right) {
+    const T& right) {
   auto result =
       std::unordered_set<cpplinq::details::operators::comparison_result>{};
   if (left < right) {
@@ -285,6 +290,13 @@ std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
     result.emplace(cpplinq::details::operators::comparison_result::not_equal);
   }
   return result;
+}
+
+template <typename T, typename U>
+std::unordered_set<cpplinq::details::operators::comparison_result> evaluate(
+    const T& left,
+    const U& right) {
+  return {cpplinq::details::operators::comparison_result::not_equal};
 }
 
 }  // namespace cpplinq::details::operators
