@@ -232,7 +232,7 @@ operator_ptr make_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<equal_to>();
   op->type = cpplinq::details::operators::operator_type::equal_to;
   op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right)); 
+  op->value = std::move(cpplinq::details::string::trim(right));
   return op;
 }
 

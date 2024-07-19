@@ -20,11 +20,10 @@ select_context make_select_context(const std::string& sql_) {
   FROM table_name
   JOIN other_table ON table_name.column = other_table.column
   WHERE condition
-  RANGE index_name LOWER_BOUND [column1 value, column2 value, ...] UPPER_BOUND [column1 value, column2 value, ...])
-  GROUP BY column1, column2, ...
-  HAVING condition
-  ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...
-  LIMIT number OFFSET number;
+  RANGE index_name LOWER_BOUND [column1 value, column2 value, ...] UPPER_BOUND
+  [column1 value, column2 value, ...]) GROUP BY column1, column2, ... HAVING
+  condition ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ... LIMIT number
+  OFFSET number;
   ****************************/
 
   auto context = select_context{};

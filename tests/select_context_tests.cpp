@@ -301,8 +301,7 @@ BOOST_AUTO_TEST_CASE(select_context) {
       "SELECT * FROM foo_table RANGE id LOWER_BOUND [90];");
   cursor = cpplinq::sql_context::execute(
       "SELECT * FROM foo_table RANGE id UPPER_BOUND [15];");
-  cursor = cpplinq::sql_context::execute(
-      "SELECT * FROM foo_table RANGE id;");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table RANGE id;");
   cursor = cpplinq::sql_context::execute(
       "SELECT id, foo, bar, foobar FROM foo_table WHERE ((id = 55 OR id = 60) "
       "OR (id > 70 AND id < 75) OR foo = '42') AND id != 42");

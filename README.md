@@ -299,6 +299,7 @@ struct table_trait<foo_table,
     };
     return columns_;
   }
+  static any_index index_for(const std::string& name);
   template <typename Functor>
   static void invoke(const std::string& column_name, Functor f) {
     if (column_name == "id") {
@@ -430,5 +431,25 @@ struct index_trait<foo_table_index_1,
   }
 };
 static auto registered_foo_table_index_1 = []() { return true; }();
+any_index foo_table_table_trait::index_for(const std::string& name) {
+  const static auto indices = std::map<std::string, any_index>{
+      {"id",
+       {foo_table_table_trait{},
+        index_trait<foo_table_index_1, cpplinq::details::traits::hash("id"),
+                    foo_table_table_trait::hash>{}}},
+  };
+  if (indices.empty()) {
+    throw cpplinq_exception("Need at least one index defined");
+  }
+  if (name.empty()) {
+    return std::begin(indices)->second;
+  }
+  auto it = indices.find(name);
+  if (it == std::end(indices)) {
+    throw cpplinq_exception{"Unknown index"};
+  }
+  return it->second;
+}
 }  // namespace cpplinq::details::traits
+
 ```
