@@ -209,6 +209,9 @@
             INSTANTIATE_INDEX,                                                 \
             (BOOST_PP_CAT(__table_type__, _table_trait), __table_name__),      \
             __indices__)};                                                     \
+    if (indices.empty()) {                                                     \
+      throw cpplinq_exception("Need at least one index defined");              \
+    }                                                                          \
     if (name.empty()) {                                                        \
       return std::begin(indices)->second;                                      \
     }                                                                          \

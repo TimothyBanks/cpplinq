@@ -17,7 +17,8 @@ cpplinq::details::cursor execute(select_context& context) {
   auto end = typename Index_trait::iterator_type{};
 
   auto& index_ = Index_trait::index_type::instance();
-  if (!context.range || (!context.range->lower_bound && !context.range->upper_bound)) {
+  if (!context.range ||
+      (!context.range->lower_bound && !context.range->upper_bound)) {
     begin = std::begin(index_);
     end = std::end(index_);
   } else if (context.range->lower_bound && context.range->upper_bound) {
