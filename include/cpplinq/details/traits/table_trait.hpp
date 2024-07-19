@@ -203,8 +203,12 @@
                          __table_name__),                                      \
                         __indices__)                                           \
   any_index BOOST_PP_CAT(__table_type__,                                       \
-                          _table_trait)::index_for(const std::string& name) {  \
-    const static auto indices = std::map<std::string, any_index>{};            \
+                         _table_trait)::index_for(const std::string& name) {   \
+    const static auto indices =                                                \
+        std::map<std::string, any_index>{BOOST_PP_SEQ_FOR_EACH(                \
+            INSTANTIATE_INDEX,                                                 \
+            (BOOST_PP_CAT(__table_type__, _table_trait), __table_name__),      \
+            __indices__)};                                                     \
     if (name.empty()) {                                                        \
       return std::begin(indices)->second;                                      \
     }                                                                          \

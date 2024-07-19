@@ -12,6 +12,15 @@
   std::get<__I__>(t) = underlying_column_type<BOOST_PP_TUPLE_ELEM(       \
       2, 1, __column_tuple__)>::from_string(v[__I__]);
 
+#define INSTANTIATE_INDEX(__ignored__, __user_defined_tuple__,   \
+                          __index_tuple__)                       \
+  {BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__),                   \
+   {BOOST_PP_TUPLE_ELEM(2, 0, __user_defined_tuple__){},         \
+    index_trait<BOOST_PP_TUPLE_ELEM(3, 1, __index_tuple__),      \
+                cpplinq::details::traits::hash(                  \
+                    BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__)), \
+                BOOST_PP_TUPLE_ELEM(2, 0, __user_defined_tuple__)::hash>{}}},
+
 #define DECLARE_INDEX(__ignored__, __user_defined_tuple__, __index_tuple__) \
   template <>                                                               \
   struct index_trait<BOOST_PP_TUPLE_ELEM(3, 1, __index_tuple__),            \
