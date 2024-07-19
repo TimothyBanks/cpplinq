@@ -41,8 +41,7 @@ struct any_table {
   struct table_base {
     virtual const std::string& name() = 0;
     virtual const std::vector<std::string>& columns() = 0;
-    virtual cpplinq::details::cursor execute(
-        select_context& context) const = 0;
+    virtual cpplinq::details::cursor execute(select_context& context) const = 0;
   };
 
   template <typename Table_trait>

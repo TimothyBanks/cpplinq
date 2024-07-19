@@ -13,13 +13,14 @@ bool is_select_statement(const std::string& sql) {
   return cpplinq::regex::begins_with(sql, "SELECT ");
 }
 
-select_context make_select_context(const std::string& sql) {
+select_context make_select_context(const std::string& sql_) {
   /***************************
   General format of a SELECT statement in PostgreSQL:
   SELECT DISTINCT column1, column2, ...
   FROM table_name
   JOIN other_table ON table_name.column = other_table.column
   WHERE condition
+  RANGE index_name LOWER_BOUND [column1 value, column2 value, ...] UPPER_BOUND [column1 value, column2 value, ...])
   GROUP BY column1, column2, ...
   HAVING condition
   ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...
@@ -27,6 +28,11 @@ select_context make_select_context(const std::string& sql) {
   ****************************/
 
   auto context = select_context{};
+
+  auto sql = sql_;
+  if (sql.back() == ';') {
+    sql.pop_back();
+  }
 
   // While it would be much better to use a lexer and parser such as boost
   // spirit, for now we tokenize the string by starting from the OFFSET keyword
@@ -46,6 +52,37 @@ select_context make_select_context(const std::string& sql) {
   check_unsupported_token(tokens.front(), " ORDER BY ");
   check_unsupported_token(tokens.front(), " HAVING ");
   check_unsupported_token(tokens.front(), " GROUP BY ");
+
+  tokens = regex::split(tokens.front(), " RANGE ");
+  if (tokens.size() > 1) {
+    auto range = select_context::range_info{};
+
+    auto extract = [](auto& s) {
+      auto trimmed = cpplinq::details::string::trim(s);
+      trimmed.pop_back();
+      trimmed = trimmed.substr(1);
+      auto tokens = regex::tokenize(trimmed, ',');
+      for (auto& c : tokens) {
+        c = cpplinq::details::string::trim(c);
+      }
+      return tokens;
+    };
+
+    auto subtokens = regex::split(tokens.back(), " UPPER_BOUND ");
+    if (subtokens.size() > 1) {
+      // There is an upper bound clause.
+      range.upper_bound = extract(subtokens.back());
+    }
+
+    subtokens = regex::split(subtokens.front(), " LOWER_BOUND ");
+    if (subtokens.size() > 1) {
+      // There is a lower bound clause.
+      range.lower_bound = extract(subtokens.back());
+    }
+
+    range.index_name = cpplinq::details::string::trim(subtokens.front());
+    context.range = std::move(range);
+  }
 
   tokens = regex::split(tokens.front(), " WHERE ");
   if (tokens.size() > 1) {

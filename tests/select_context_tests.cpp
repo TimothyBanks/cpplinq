@@ -285,7 +285,8 @@ BOOST_AUTO_TEST_CASE(select_context) {
     });
   }
 
-  auto cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table WHERE (id = 55 OR id = 60) OR (id > 70 AND id < 75) OR foo = '42'");
+  auto cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table RANGE index_name LOWER_BOUND [1, 2, 3, 4, 5] UPPER_BOUND [10, 11, 12, 13, 14];");
+  cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table WHERE ((id = 55 OR id = 60) OR (id > 70 AND id < 75) OR foo = '42') AND id != 42");
   cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table WHERE (id = 55 OR id = 60) OR (id > 70 AND id < 75) AND foo = '42'");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foobar_table");

@@ -4,6 +4,7 @@
 #include <cpplinq/details/operators/evaluate.hpp>
 #include <cpplinq/details/operators/expression_tree.hpp>
 #include <cpplinq/details/traits/column_trait.hpp>
+#include <cpplinq/details/traits/index_trait.hpp>
 #include <cpplinq/details/traits/underlying_column_type.hpp>
 #include <cstddef>
 #include <memory>
@@ -190,6 +191,13 @@
         __table_name__, cpplinq::details::traits::any_table{trait{}});         \
     return true;                                                               \
   }();                                                                         \
+  BOOST_PP_SEQ_FOR_EACH(                                                       \
+      DECLARE_INDEX,                                                           \
+      (table_trait<__table_type__,                                             \
+                   __record_type__,                                            \
+                   cpplinq::details::traits::hash(__table_name__)>,            \
+       __table_name__),                                                        \
+      __indices__)                                                             \
   }  // namespace cpplinq::details::traits
 
 namespace cpplinq::details::traits {
