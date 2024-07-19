@@ -8,42 +8,6 @@
 
 namespace cpplinq::details::traits {
 
-template <typename Table_trait>
-cpplinq::details::cursor execute(select_context& context) {
-  // TODO:  Add in the RANGE clause so the user can specify which index.
-  // Currently this will iterate the entire table.
-  // Here is the process I think that should happen:
-  // 1.  The index_trait will refer to an index type and we will specify the
-  // index_type in the DECLARE_TABLE
-  // 2.  An any_index will need to be created so that I can ask the table_trait
-  // for the index with the given name. 2.1 The template arguments for the
-  // any_index should be a table_trait and an index trait.
-  // 3.  That any_index (which will contain the index trait), will know how to
-  // create the tuple from the token vector of values.
-  // 4.  This iterate code will be move to the any_index code
-  auto& index = Table_trait::table_type::instance().primary_index();
-
-  auto cursor = cpplinq::details::cursor{};
-  cursor.columns = context.columns;
-
-  for (auto it = std::begin(index); it != std::end(index); ++it) {
-    auto& value = *it;
-
-    // TODO:  Aliases for columns need to be factored in during evaluation.
-    if (!Table_trait::evaluate(value, context.et)) {
-      continue;
-    }
-
-    cursor.results.emplace_back();
-    auto& row = cursor.results.back();
-    for (const auto& column : context.columns) {
-      row.emplace_back(Table_trait::column_value(column.name, value));
-    }
-  }
-
-  return cursor;
-}
-
 struct any_table {
  public:
  private:
@@ -65,7 +29,12 @@ struct any_table {
 
     virtual cpplinq::details::cursor execute(
         select_context& context) const override {
-      return cpplinq::details::traits::execute<table_trait>(context);
+      auto index_name = std::string{};
+      if (context.range) {
+        index_name = context.range->index_name;
+      }
+      auto index = table_trait::index_for(index_name);
+      return index.execute(context);
     }
   };
 

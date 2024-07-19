@@ -21,12 +21,35 @@ cpplinq::details::cursor execute(select_context& context) {
   // 3.  That any_index (which will contain the index trait), will know how to
   // create the tuple from the token vector of values.
   // 4.  This iterate code will be move to the any_index code
-  auto& index = Table_trait::table_type::instance().primary_index();
+
+  auto lower_bound = std::optional<typename Index_trait::tuple_type>{};
+  auto upper_bound = std::optional<typename Index_trait::tuple_type>{};
+  auto begin = typename Index_trait::iterator_type{};
+  auto end = typename Index_trait::iterator_type{};
+
+  auto& index_ = Index_trait::index_type::instance();
+  if (!context.range) {
+    begin = std::begin(index_);
+    end = std::end(index_);
+  } else if (context.range->lower_bound && context.range->upper_bound) {
+    begin =
+        index_.lower_bound(Index_trait::to_tuple(*context.range->lower_bound));
+    end =
+        index_.lower_bound(Index_trait::to_tuple(*context.range->upper_bound));
+  } else if (context.range->lower_bound) {
+    begin =
+        index_.lower_bound(Index_trait::to_tuple(*context.range->lower_bound));
+    end = std::end(index_);
+  } else if (context.range->upper_bound) {
+    begin = std::begin(index_);
+    end =
+        index_.lower_bound(Index_trait::to_tuple(*context.range->upper_bound));
+  }
 
   auto cursor = cpplinq::details::cursor{};
   cursor.columns = context.columns;
 
-  for (auto it = std::begin(index); it != std::end(index); ++it) {
+  for (auto it = begin; it != end; ++it) {
     auto& value = *it;
 
     // TODO:  Aliases for columns need to be factored in during evaluation.
@@ -66,7 +89,8 @@ struct any_index {
 
     virtual cpplinq::details::cursor execute(
         select_context& context) const override {
-      return cpplinq::details::traits::execute<index_trait>(context);
+      return cpplinq::details::traits::execute<table_trait, index_trait>(
+          context);
     }
   };
 

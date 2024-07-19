@@ -18,6 +18,7 @@ if(Boost_FOUND)
 endif()
 
 add_library(cpplinq STATIC
+    src/any_index.cpp
     src/any_procedure.cpp  
     src/any_table.cpp
     src/call_context.cpp 

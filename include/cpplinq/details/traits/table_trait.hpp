@@ -3,10 +3,12 @@
 #include <cpplinq/details/cursor.hpp>
 #include <cpplinq/details/operators/evaluate.hpp>
 #include <cpplinq/details/operators/expression_tree.hpp>
+#include <cpplinq/details/traits/any_index.hpp>
 #include <cpplinq/details/traits/column_trait.hpp>
 #include <cpplinq/details/traits/index_trait.hpp>
 #include <cpplinq/details/traits/underlying_column_type.hpp>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -131,6 +133,7 @@
           BOOST_PP_SEQ_FOR_EACH(GET_COLUMN_NAME, _, __columns__)};             \
       return columns_;                                                         \
     }                                                                          \
+    static any_index index_for(const std::string& name);                       \
     template <typename Functor>                                                \
     static void invoke(const std::string& column_name, Functor f) {            \
       BOOST_PP_SEQ_FOR_EACH(GENERATE_INVOKE_BLOCK, __table_name__,             \
@@ -199,6 +202,18 @@
                         (BOOST_PP_CAT(__table_type__, _table_trait),           \
                          __table_name__),                                      \
                         __indices__)                                           \
+  any_index BOOST_PP_CAT(__table_type__,                                       \
+                          _table_trait)::index_for(const std::string& name) {  \
+    const static auto indices = std::map<std::string, any_index>{};            \
+    if (name.empty()) {                                                        \
+      return std::begin(indices)->second;                                      \
+    }                                                                          \
+    auto it = indices.find(name);                                              \
+    if (it == std::end(indices)) {                                             \
+      throw cpplinq_exception{"Unknown index"};                                \
+    }                                                                          \
+    return it->second;                                                         \
+  }                                                                            \
   }  // namespace cpplinq::details::traits
 
 namespace cpplinq::details::traits {
