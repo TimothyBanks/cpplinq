@@ -191,13 +191,14 @@
         __table_name__, cpplinq::details::traits::any_table{trait{}});         \
     return true;                                                               \
   }();                                                                         \
-  BOOST_PP_SEQ_FOR_EACH(                                                       \
-      DECLARE_INDEX,                                                           \
-      (table_trait<__table_type__,                                             \
-                   __record_type__,                                            \
-                   cpplinq::details::traits::hash(__table_name__)>,            \
-       __table_name__),                                                        \
-      __indices__)                                                             \
+  using BOOST_PP_CAT(__table_type__, _table_trait) =                           \
+      table_trait<__table_type__,                                              \
+                  __record_type__,                                             \
+                  cpplinq::details::traits::hash(__table_name__)>;             \
+  BOOST_PP_SEQ_FOR_EACH(DECLARE_INDEX,                                         \
+                        (BOOST_PP_CAT(__table_type__, _table_trait),           \
+                         __table_name__),                                      \
+                        __indices__)                                           \
   }  // namespace cpplinq::details::traits
 
 namespace cpplinq::details::traits {

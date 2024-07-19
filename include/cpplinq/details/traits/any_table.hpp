@@ -12,6 +12,15 @@ template <typename Table_trait>
 cpplinq::details::cursor execute(select_context& context) {
   // TODO:  Add in the RANGE clause so the user can specify which index.
   // Currently this will iterate the entire table.
+  // Here is the process I think that should happen:
+  // 1.  The index_trait will refer to an index type and we will specify the
+  // index_type in the DECLARE_TABLE
+  // 2.  An any_index will need to be created so that I can ask the table_trait
+  // for the index with the given name. 2.1 The template arguments for the
+  // any_index should be a table_trait and an index trait.
+  // 3.  That any_index (which will contain the index trait), will know how to
+  // create the tuple from the token vector of values.
+  // 4.  This iterate code will be move to the any_index code
   auto& index = Table_trait::table_type::instance().primary_index();
 
   auto cursor = cpplinq::details::cursor{};

@@ -27,12 +27,19 @@ struct foobar_record {
 // to that concept.
 template <typename Table, typename... T>
 struct table_index {
-  using table_index_type = std::tuple<T...>;
+  using tuple_type = std::tuple<T...>;
   using table_type = Table;
-  using backing_type = std::map<table_index_type, size_t>;
+  using backing_type = std::map<tuple_type, size_t>;
 
   backing_type index_;
   table_type* table_;
+
+  static table_index& instance() {
+    static auto instance_ = table_index{};
+    return instance_;
+  }
+
+  void table(table_type& t) { table_ = &t; }
 
   table_index() = default;
   table_index(const table_index&) = default;
@@ -43,11 +50,11 @@ struct table_index {
   table_index& operator=(const table_index&) = default;
   table_index& operator=(table_index&&) = default;
 
-  void push(table_index_type key, size_t position) {
+  void push(tuple_type key, size_t position) {
     index_.emplace(std::move(key), position);
   }
 
-  void pop(const table_index_type& key) { index_.erase(key); }
+  void pop(const tuple_type& key) { index_.erase(key); }
 
   struct iterator {
     typename backing_type::iterator begin_;
@@ -118,12 +125,12 @@ struct table_index {
                     std::end(index_)};
   }
 
-  iterator lower_bound(const table_index_type& key) {
+  iterator lower_bound(const tuple_type& key) {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.lower_bound(key)};
   }
 
-  iterator upper_bound(const table_index_type& key) {
+  iterator upper_bound(const tuple_type& key) {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.upper_bound(key)};
   }
@@ -138,12 +145,12 @@ struct table_index {
                     std::end(index_)};
   }
 
-  const iterator lower_bound(const table_index_type& key) const {
+  const iterator lower_bound(const tuple_type& key) const {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.lower_bound(key)};
   }
 
-  const iterator upper_bound(const table_index_type& key) const {
+  const iterator upper_bound(const tuple_type& key) const {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.upper_bound(key)};
   }
@@ -164,10 +171,10 @@ struct foo_table {
   using backing_store = std::vector<record_type>;
   using primary_index_type = table_index<foo_table, size_t>;
 
-  primary_index_type primary_index_;
   backing_store records_;
 
-  foo_table() : primary_index_{*this} {}
+  foo_table() { primary_index_type::instance().table(*this); }
+
   foo_table(const foo_table&) = default;
   foo_table(foo_table&&) = default;
 
@@ -182,14 +189,15 @@ struct foo_table {
   void push(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
-    primary_index_.push(std::make_tuple(record.id), records_.size() - 1);
+    primary_index_type::instance().push(std::make_tuple(record.id),
+                                        records_.size() - 1);
   }
 
   void pop(size_t index) {
     if (index >= records_.size()) {
       return;
     }
-    primary_index_.pop(std::make_tuple(records_[index].id));
+    primary_index_type::instance().pop(std::make_tuple(records_[index].id));
     records_.erase(std::begin(records_) + index);
   }
 
@@ -197,10 +205,10 @@ struct foo_table {
   const backing_store& data() const { return records_; }
 
   const primary_index_type& primary_index() const {
-    return primary_index_;
+    return primary_index_type::instance();
   }
 
-  primary_index_type& primary_index() { return primary_index_; }
+  primary_index_type& primary_index() { return primary_index_type::instance(); }
 };
 
 struct foobar_table {
@@ -210,10 +218,10 @@ struct foobar_table {
   using backing_store = std::vector<record_type>;
   using primary_index_type = table_index<foobar_table, size_t>;
 
-  primary_index_type primary_index_;
   backing_store records_;
 
-  foobar_table() : primary_index_{*this} {}
+  foobar_table() { primary_index_type::instance().table(*this); }
+
   foobar_table(const foobar_table&) = default;
   foobar_table(foobar_table&&) = default;
 
@@ -228,14 +236,16 @@ struct foobar_table {
   void push(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
-    primary_index_.push(std::make_tuple(record.identifier), records_.size() - 1);
+    primary_index_type::instance().push(std::make_tuple(record.identifier),
+                                        records_.size() - 1);
   }
 
   void pop(size_t index) {
     if (index >= records_.size()) {
       return;
     }
-    primary_index_.pop(std::make_tuple(records_[index].identifier));
+    primary_index_type::instance().pop(
+        std::make_tuple(records_[index].identifier));
     records_.erase(std::begin(records_) + index);
   }
 
@@ -243,52 +253,58 @@ struct foobar_table {
   const backing_store& data() const { return records_; }
 
   const primary_index_type& primary_index() const {
-    return primary_index_;
+    return primary_index_type::instance();
   }
 
-  primary_index_type& primary_index() {
-    return primary_index_;
-  }
+  primary_index_type& primary_index() { return primary_index_type::instance(); }
 };
 
 // This makes the table known to cpplinq.
+using foo_table_index_1 = table_index<foo_table, size_t>;
 DECLARE_TABLE("foo_table",
               foo_table,
               foo_record,
               ((id, size_t))((foo, std::string))((bar, float))(
                   (foobar, std::vector<std::string>)),
-              ());
+              (("id", foo_table_index_1, ((id, size_t)))));
+
+using foobar_table_index_1 = table_index<foobar_table, size_t>;
 DECLARE_TABLE("foobar_table",
               foobar_table,
               foobar_record,
               ((identifier, size_t))((data, std::string)),
-              ());
+              (("id", foobar_table_index_1, ((id, size_t)))));
 
 BOOST_AUTO_TEST_CASE(select_context) {
   auto& ft = foo_table::instance();
 
   for (auto i = size_t{0}; i < 100; ++i) {
-    ft.push({
-        .id = i,
-        .foo = std::to_string(i),
-        .bar = static_cast<float>(i),
-        .foobar = {std::to_string(i), std::to_string(i), std::to_string(i)}
-    });
+    ft.push(
+        {.id = i,
+         .foo = std::to_string(i),
+         .bar = static_cast<float>(i),
+         .foobar = {std::to_string(i), std::to_string(i), std::to_string(i)}});
   }
 
   auto& fbt = foobar_table::instance();
 
   for (auto i = size_t{1000}; i < 1100; ++i) {
-    fbt.push({
-        .identifier = i,
-        .data = std::to_string(i) + std::to_string(i) + std::to_string(i)
-    });
+    fbt.push(
+        {.identifier = i,
+         .data = std::to_string(i) + std::to_string(i) + std::to_string(i)});
   }
 
-  auto cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table RANGE index_name LOWER_BOUND [1, 2, 3, 4, 5] UPPER_BOUND [10, 11, 12, 13, 14];");
-  cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table WHERE ((id = 55 OR id = 60) OR (id > 70 AND id < 75) OR foo = '42') AND id != 42");
-  cursor = cpplinq::sql_context::execute("SELECT id, foo, bar, foobar FROM foo_table WHERE (id = 55 OR id = 60) OR (id > 70 AND id < 75) AND foo = '42'");
+  auto cursor = cpplinq::sql_context::execute(
+      "SELECT * FROM foo_table RANGE index_name LOWER_BOUND [1, 2, 3, 4, 5] "
+      "UPPER_BOUND [10, 11, 12, 13, 14];");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT id, foo, bar, foobar FROM foo_table WHERE ((id = 55 OR id = 60) "
+      "OR (id > 70 AND id < 75) OR foo = '42') AND id != 42");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT id, foo, bar, foobar FROM foo_table WHERE (id = 55 OR id = 60) "
+      "OR (id > 70 AND id < 75) AND foo = '42'");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foobar_table");
-  cursor = cpplinq::sql_context::execute("SELECT indentifier, data FROM foobar_table");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT indentifier, data FROM foobar_table");
 }

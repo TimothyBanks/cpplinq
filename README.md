@@ -7,6 +7,7 @@ For now, it is much easier to show an example of the library to demonstrate how 
 1.  Duck typing.  There is an implicit interface that this library requires for integrators, but this interface can be exposed on your existing types with minimal changes.  One of the great features of CPP templates is duck typing, "if it walks like a duck and talks like a duck, it's a duck", or in our context, if the type has a method named the same as the method required by the API and matches the function signature, then it must be a type compatible with us.
 2.  Type traits.  This is a solid design pattern globally accepted by the CPP community that allows encapsulation of most of this information needed by cpplinq.  This nice thing about this is that the information is also available at compile time.
 3.  Macros.  Most of this library is built on the concept of code generation and that is exactly what Macros give us.
+4. Type erasure.  Because who needs type information anyways.
 
 Additional features that could be looked into is the use of an LLVM and clang compiler plugin that could generate this code at compile time using simple annotations on your types.
 
@@ -27,12 +28,19 @@ struct foo_record {
 // to that concept.
 template <typename Table, typename... T>
 struct table_index {
-  using table_index_type = std::tuple<T...>;
+  using tuple_type = std::tuple<T...>;
   using table_type = Table;
-  using backing_type = std::map<table_index_type, size_t>;
+  using backing_type = std::map<tuple_type, size_t>;
 
   backing_type index_;
   table_type* table_;
+
+  static table_index& instance() {
+    static auto instance_ = table_index{};
+    return instance_;
+  }
+
+  void table(table_type& t) { table_ = &t; }
 
   table_index() = default;
   table_index(const table_index&) = default;
@@ -43,11 +51,11 @@ struct table_index {
   table_index& operator=(const table_index&) = default;
   table_index& operator=(table_index&&) = default;
 
-  void push(table_index_type key, size_t position) {
+  void push(tuple_type key, size_t position) {
     index_.emplace(std::move(key), position);
   }
 
-  void pop(const table_index_type& key) { index_.erase(key); }
+  void pop(const tuple_type& key) { index_.erase(key); }
 
   struct iterator {
     typename backing_type::iterator begin_;
@@ -118,12 +126,12 @@ struct table_index {
                     std::end(index_)};
   }
 
-  iterator lower_bound(const table_index_type& key) {
+  iterator lower_bound(const tuple_type& key) {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.lower_bound(key)};
   }
 
-  iterator upper_bound(const table_index_type& key) {
+  iterator upper_bound(const tuple_type& key) {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.upper_bound(key)};
   }
@@ -138,12 +146,12 @@ struct table_index {
                     std::end(index_)};
   }
 
-  const iterator lower_bound(const table_index_type& key) const {
+  const iterator lower_bound(const tuple_type& key) const {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.lower_bound(key)};
   }
 
-  const iterator upper_bound(const table_index_type& key) const {
+  const iterator upper_bound(const tuple_type& key) const {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.upper_bound(key)};
   }
@@ -162,10 +170,10 @@ struct foo_table {
   using backing_store = std::vector<record_type>;
   using primary_index_type = table_index<foo_table, size_t>;
 
-  primary_index_type primary_index_;
   backing_store records_;
 
-  foo_table() : primary_index_{*this} {}
+  foo_table() { primary_index_type::instance().table(*this); }
+
   foo_table(const foo_table&) = default;
   foo_table(foo_table&&) = default;
 
@@ -180,14 +188,15 @@ struct foo_table {
   void push(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
-    primary_index_.push(std::make_tuple(record.id), records_.size() - 1);
+    primary_index_type::instance().push(std::make_tuple(record.id),
+                                        records_.size() - 1);
   }
 
   void pop(size_t index) {
     if (index >= records_.size()) {
       return;
     }
-    primary_index_.pop(std::make_tuple(records_[index].id));
+    primary_index_type::instance().pop(std::make_tuple(records_[index].id));
     records_.erase(std::begin(records_) + index);
   }
 
@@ -195,15 +204,19 @@ struct foo_table {
   const backing_store& data() const { return records_; }
 
   const primary_index_type& primary_index() const {
-    return primary_index_;
+    return primary_index_type::instance();
   }
 
-  primary_index_type& primary_index() { return primary_index_; }
+  primary_index_type& primary_index() { return primary_index_type::instance(); }
 };
 
 // This makes the table known to cpplinq.
-DECLARE_TABLE("foo_table", foo_table, foo_record,
-  ((id, uint64_t))((foo, std::string))((bar, float))((foobar, std::vector<std::string>)), ());
+DECLARE_TABLE("foo_table",
+              foo_table,
+              foo_record,
+              ((id, size_t))((foo, std::string))((bar, float))(
+                  (foobar, std::vector<std::string>)),
+              (("id", foo_table_index_1, ((id, size_t)))));
 
 ...
 
@@ -225,7 +238,7 @@ struct column_trait<cpplinq::details::traits::hash("id"),
   static constexpr auto hash = cpplinq::details::traits::hash("id");
   static constexpr auto table_hash =
       cpplinq::details::traits::hash("foo_table");
-  using column_type = uint64_t;
+  using column_type = size_t;
   static const auto& name() { return "id"; }
   static auto& value(const foo_record& r) { return r.id; }
 };
@@ -370,5 +383,52 @@ static auto registered_foo_table = []() {
       "foo_table", cpplinq::details::traits::any_table{trait{}});
   return true;
 }();
+using foo_table_table_trait =
+    table_trait<foo_table,
+                foo_record,
+                cpplinq::details::traits::hash("foo_table")>;
+template <>
+struct index_trait<foo_table_index_1,
+                   cpplinq::details::traits::hash("id"),
+                   foo_table_table_trait::hash> {
+  using index_type = foo_table_index_1;
+  using iterator_type = typename index_type::iterator;
+  using tuple_type = typename index_type::tuple_type;
+  static constexpr auto hash = cpplinq::details::traits::hash("id");
+  using table_trait = foo_table_table_trait;
+  static const std::string& name() {
+    static const auto name_ = std::string{"id"};
+    return name_;
+  }
+  static const std::vector<std::string>& columns() {
+    static const auto columns_ = std::vector<std::string>{
+        "id",
+    };
+    return columns_;
+  }
+  static typename index_type::iterator begin() {
+    return index_type::instance().begin();
+  }
+  static typename index_type::iterator end() {
+    return index_type::instance().begin();
+  }
+  static tuple_type to_tuple(const std::vector<std::string>& v) {
+    if (v.size() != std::tuple_size<tuple_type>()) {
+      throw cpplinq::details::cpplinq_exception(
+          "Input not the same size as tuple type.");
+    }
+    auto t = tuple_type{};
+    auto& columns_ = columns();
+    std::get<0>(t) = underlying_column_type<size_t>::from_string(v[0]);
+    return t;
+  }
+  static typename index_type::iterator lower_bound(const tuple_type& t) {
+    return index_type::instance().lower_bound(t);
+  }
+  static typename index_type::iterator upper_bound(const tuple_type& t) {
+    return index_type::instance().upper_bound(t);
+  }
+};
+static auto registered_foo_table_index_1 = []() { return true; }();
 }  // namespace cpplinq::details::traits
 ```
