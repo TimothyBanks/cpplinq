@@ -28,11 +28,13 @@ struct foobar_record {
 // 4.  As the development of this library progresses, there may be additional
 // concepts centered around secondary indices.
 struct foo_table {
-  friend class cpplinq::details::information_schema::table_index<foo_table, size_t>;
+  friend class cpplinq::details::information_schema::table_index<foo_table,
+                                                                 size_t>;
 
   using record_type = foo_record;
   using backing_store = std::vector<record_type>;
-  using primary_index_type = cpplinq::details::information_schema::table_index<foo_table, size_t>;
+  using primary_index_type =
+      cpplinq::details::information_schema::table_index<foo_table, size_t>;
 
   backing_store records_;
 
@@ -75,11 +77,13 @@ struct foo_table {
 };
 
 struct foobar_table {
-  friend class cpplinq::details::information_schema::table_index<foobar_table, size_t>;
+  friend class cpplinq::details::information_schema::table_index<foobar_table,
+                                                                 size_t>;
 
   using record_type = foobar_record;
   using backing_store = std::vector<record_type>;
-  using primary_index_type = cpplinq::details::information_schema::table_index<foobar_table, size_t>;
+  using primary_index_type =
+      cpplinq::details::information_schema::table_index<foobar_table, size_t>;
 
   backing_store records_;
 
@@ -123,7 +127,8 @@ struct foobar_table {
 };
 
 // This makes the table known to cpplinq.
-using foo_table_index_1 = cpplinq::details::information_schema::table_index<foo_table, size_t>;
+using foo_table_index_1 =
+    cpplinq::details::information_schema::table_index<foo_table, size_t>;
 DECLARE_TABLE("foo_table",
               foo_table,
               foo_record,
@@ -131,7 +136,8 @@ DECLARE_TABLE("foo_table",
                   (foobar, std::vector<std::string>)),
               (("id", foo_table_index_1, ((id, size_t)))));
 
-using foobar_table_index_1 = cpplinq::details::information_schema::table_index<foobar_table, size_t>;
+using foobar_table_index_1 =
+    cpplinq::details::information_schema::table_index<foobar_table, size_t>;
 DECLARE_TABLE("foobar_table",
               foobar_table,
               foobar_record,
@@ -246,8 +252,12 @@ BOOST_AUTO_TEST_CASE(call_context) {
 }
 
 BOOST_AUTO_TEST_CASE(information_schema) {
-  auto cursor = cpplinq::sql_context::execute("SELECT * FROM information_schema.tables;");
-  cursor = cpplinq::sql_context::execute("SELECT * FROM information_schema.columns;");
-  cursor = cpplinq::sql_context::execute("SELECT * FROM information_schema.routines;");
-  cursor = cpplinq::sql_context::execute("SELECT * FROM information_schema.parameters;");
+  auto cursor =
+      cpplinq::sql_context::execute("SELECT * FROM information_schema.tables;");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT * FROM information_schema.columns;");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT * FROM information_schema.routines;");
+  cursor = cpplinq::sql_context::execute(
+      "SELECT * FROM information_schema.parameters;");
 }

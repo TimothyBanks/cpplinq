@@ -62,7 +62,7 @@
 #define REGISTER_PARAMETER(__ignored__, __procedure_tuple__, __I__,          \
                            __parameter_tuple__)                              \
   static auto BOOST_PP_CAT(                                                  \
-      registed_,                                                             \
+      registered_,                                                             \
       BOOST_PP_CAT(                                                          \
           BOOST_PP_TUPLE_ELEM(3, 1, __procedure_tuple__),                    \
           BOOST_PP_CAT(                                                      \

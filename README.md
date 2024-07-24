@@ -654,11 +654,51 @@ struct procedure_trait<cpplinq::details::traits::hash("procedures.bar")> {
                         hash>::from_string(all_args[2].second));
   }
 };
+static auto registered_procedures_bar_arg1 = []() {
+  auto parameter_def = cpplinq::details::information_schema::parameter{
+      .specific_name = "procedures.bar",
+      .ordinal_position = 0,
+      .parameter_name = "arg1",
+      .data_type = "std::string",
+      .parameter_default = "",
+  };
+  cpplinq::details::information_schema::parameters::instance().push(
+      std::move(parameter_def));
+  return true;
+}();
+static auto registered_procedures_bar_arg2 = []() {
+  auto parameter_def = cpplinq::details::information_schema::parameter{
+      .specific_name = "procedures.bar",
+      .ordinal_position = 1,
+      .parameter_name = "arg2",
+      .data_type = "uint64_t",
+      .parameter_default = "",
+  };
+  cpplinq::details::information_schema::parameters::instance().push(
+      std::move(parameter_def));
+  return true;
+}();
+static auto registered_procedures_bar_arg3 = []() {
+  auto parameter_def = cpplinq::details::information_schema::parameter{
+      .specific_name = "procedures.bar",
+      .ordinal_position = 2,
+      .parameter_name = "arg3",
+      .data_type = "double",
+      .parameter_default = "3.14",
+  };
+  cpplinq::details::information_schema::parameters::instance().push(
+      std::move(parameter_def));
+  return true;
+}();
 static auto registered_procedures_bar = []() {
   using trait =
       procedure_trait<cpplinq::details::traits::hash("procedures.bar")>;
   cpplinq::details::procedure_registry::instance().add(
       trait::name(), cpplinq::details::traits::any_procedure{trait{}});
+  auto procedure_def = cpplinq::details::information_schema::routine{
+      .routine_name = "procedures.bar"};
+  cpplinq::details::information_schema::routines::instance().push(
+      std::move(procedure_def));
   return true;
 }();
 }  // namespace cpplinq::details::traits
