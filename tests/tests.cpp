@@ -376,8 +376,8 @@ BOOST_AUTO_TEST_CASE(call_context) {
   cursor = cpplinq::sql_context::execute(
       "CALL procedures.bar('Hello bar', arg2 => 42);");
   cursor = cpplinq::sql_context::execute(
-      "CALL procedures.bar('Hello bar', arg3 =>1.5, arg2 => 42);");
+      "CALL procedures.bar('Hello bar', arg3 => 1.5, arg2 => 42);");
   cursor = cpplinq::sql_context::execute(
-      "CALL procedures.bar(arg1 => 'Hello bar', arg3 =>1.5, arg2 => 42);");
+      "CALL procedures.bar(arg1 => 'Hello bar', arg3 => 1.5, arg2 => 42);");
   cursor = cpplinq::sql_context::execute("CALL procedures.foobar();");
 }
