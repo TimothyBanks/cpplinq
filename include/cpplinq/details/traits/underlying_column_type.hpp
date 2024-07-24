@@ -1,7 +1,9 @@
 #pragma once
+#include <any>
 #include <cstdlib>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 namespace cpplinq::details::traits {
 
