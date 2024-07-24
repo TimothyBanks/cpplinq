@@ -666,7 +666,7 @@ static auto registered_procedures_bar = []() {
 
 ## INFORMATION_SCHEMA
 
-TBD
+Postgres supports an information_schema (https://www.postgresql.org/docs/current/information-schema.html) which allows the end user to dynamically query the database for its structure such as available tables, columns, procedures, etc.  cpplinq supports a subset of that schema to provide the ability to query against those information_schema tables for dynamically discovering the tables and stored procedures exported by the API.
 
 ## Aggregates
 
