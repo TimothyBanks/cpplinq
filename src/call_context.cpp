@@ -23,22 +23,23 @@ call_context make_call_context(const std::string& sql_) {
     throw cpplinq_exception("Invalid CALL syntax.");
   }
 
-  auto parameters = regex::tokenize(tokens.back(), ",");
-
-  auto is_positional = false;
+  auto parameters = regex::tokenize(tokens.back(), ',');
   for (const auto& parameter : parameters) {
+    if (parameter == ")") {
+      break;
+    }
     auto subtokens = regex::split(parameter, "=>");
     auto name = std::string{};
-    if (tokens.size() > 1) {
-      name = details::string::trim(tokens.front());
+    if (subtokens.size() > 1) {
+      name = details::string::trim(subtokens.front());
     }
     context.arguments.emplace_back();
     context.arguments.back() =
-        std::make_pair(std::move(name), details::string::trim(tokens.back()));
+        std::make_pair(std::move(name), details::string::trim(subtokens.back()));
   }
 
   tokens = regex::split(tokens.front(), "CALL ");
-  context.name = details::string::trim(tokens.front());
+  context.name = details::string::trim(tokens.back());
 
   return context;
 }

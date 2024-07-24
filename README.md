@@ -11,6 +11,9 @@ For now, it is much easier to show an example of the library to demonstrate how 
 
 Additional features that could be looked into is the use of an LLVM and clang compiler plugin that could generate this code at compile time using simple annotations on your types.
 
+## DECLARE_TABLE
+To declare and expose tables through this API, you can refer to the following examples.
+
 ```
 // cpplinq places no concepts on the table structure.
 struct foo_record {
@@ -452,4 +455,211 @@ any_index foo_table_table_trait::index_for(const std::string& name) {
 }
 }  // namespace cpplinq::details::traits
 
+```
+
+## DECLARE_PROCEDURE
+
+To declare and expose stored procedures, you can refer to the following example.  The only concept that is enforced on the procedure type is that it is a singleton.
+
+```
+struct procedures {
+  // The only concept enforced on stored procedures is the singleton
+  // instance.
+  static procedures& instance() {
+    static auto instance_ = procedures{};
+    return instance_;
+  }
+
+  // TODO:  Provide user define conversion operators on cursor
+  //        so that this method can just return a string, for example.
+  cpplinq::details::cursor foo(const std::string& arg) {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("foo");
+    result.results.back().emplace_back(arg);
+    return result;
+  }
+
+  cpplinq::details::cursor bar(const std::string& arg1,
+                               uint64_t arg2,
+                               double arg3) {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("bar");
+    result.results.back().emplace_back(arg1);
+    result.results.back().emplace_back(std::to_string(arg2));
+    result.results.back().emplace_back(std::to_string(arg3));
+    return result;
+  }
+
+  cpplinq::details::cursor foobar() {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("foobar");
+    return result;
+  }
+};
+
+// This makes the procedures known to cpplinq.
+DECLARE_PROCEDURE("procedures.foo",
+                  procedures,
+                  foo,
+                  ((arg, std::string, "hello world")));
+DECLARE_PROCEDURE("procedures.bar",
+                  procedures,
+                  bar,
+                  ((arg1, std::string))((arg2,
+                                         uint64_t))((arg3, double, 3.14)));
+DECLARE_PROCEDURE_NO_PARAMETERS("procedures.foobar", procedures, foobar);
+```
+And you can execute SQL against those procedures similar to the following:
+```
+// Remember, this is a postgres flavor of SQL.
+auto cursor = cpplinq::sql_context::execute("CALL procedures.foo();");
+cursor = cpplinq::sql_context::execute("CALL procedures.foo('Hello foo');");
+cursor =
+    cpplinq::sql_context::execute("CALL procedures.foo(arg => 'Hello foo');");
+cursor = cpplinq::sql_context::execute(
+    "CALL procedures.bar('Hello bar', 42, 1.1);");
+cursor =
+    cpplinq::sql_context::execute("CALL procedures.bar('Hello bar', 42);");
+cursor = cpplinq::sql_context::execute(
+    "CALL procedures.bar('Hello bar', arg2 => 42);");
+cursor = cpplinq::sql_context::execute(
+    "CALL procedures.bar('Hello bar', arg3 =>1.5, arg2 => 42);");
+cursor = cpplinq::sql_context::execute(
+    "CALL procedures.bar(arg1 => 'Hello bar', arg3 =>1.5, arg2 => 42);");
+cursor = cpplinq::sql_context::execute("CALL procedures.foobar();");
+```
+
+The `DECLARE_PROCEDURE` macro will expand to something similar to the following.  This is the generated output of the macro from above.
+```
+DECLARE_PROCEDURE("procedures.bar",
+                  procedures,
+                  bar,
+                  ((arg1, std::string))((arg2,
+                                         uint64_t))((arg3, double, 3.14)));
+```                                       
+and the code generated from that macro call:
+```
+namespace cpplinq::details::traits {
+template <>
+struct parameter_trait<cpplinq::details::traits::hash("arg1"),
+                       cpplinq::details::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::details::traits::hash("arg1");
+  constexpr static auto procedure_hash =
+      cpplinq::details::traits::hash("procedures.bar");
+  constexpr static auto position = size_t{0};
+  using type = std::string;
+  static type default_value() {
+    static const auto default_value_ = type{};
+    return default_value_;
+  }
+  static const type from_string(const std::string& value) {
+    if (value.empty()) {
+      return default_value();
+    }
+    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+        value);
+  }
+  static const std::string& procedure_name() {
+    static const auto name_ = std::string{"procedures.bar"};
+    return name_;
+  }
+  static const std::string& name() {
+    static const auto name_ = std::string{"arg1"};
+    return name_;
+  }
+};
+template <>
+struct parameter_trait<cpplinq::details::traits::hash("arg2"),
+                       cpplinq::details::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::details::traits::hash("arg2");
+  constexpr static auto procedure_hash =
+      cpplinq::details::traits::hash("procedures.bar");
+  constexpr static auto position = size_t{1};
+  using type = uint64_t;
+  static type default_value() {
+    static const auto default_value_ = type{};
+    return default_value_;
+  }
+  static const type from_string(const std::string& value) {
+    if (value.empty()) {
+      return default_value();
+    }
+    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+        value);
+  }
+  static const std::string& procedure_name() {
+    static const auto name_ = std::string{"procedures.bar"};
+    return name_;
+  }
+  static const std::string& name() {
+    static const auto name_ = std::string{"arg2"};
+    return name_;
+  }
+};
+template <>
+struct parameter_trait<cpplinq::details::traits::hash("arg3"),
+                       cpplinq::details::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::details::traits::hash("arg3");
+  constexpr static auto procedure_hash =
+      cpplinq::details::traits::hash("procedures.bar");
+  constexpr static auto position = size_t{2};
+  using type = double;
+  static type default_value() {
+    static const auto default_value_ = type{3.14};
+    return default_value_;
+  }
+  static const type from_string(const std::string& value) {
+    if (value.empty()) {
+      return default_value();
+    }
+    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+        value);
+  }
+  static const std::string& procedure_name() {
+    static const auto name_ = std::string{"procedures.bar"};
+    return name_;
+  }
+  static const std::string& name() {
+    static const auto name_ = std::string{"arg3"};
+    return name_;
+  }
+};
+template <>
+struct procedure_trait<cpplinq::details::traits::hash("procedures.bar")> {
+  using procedure_type = procedures;
+  static constexpr auto hash = cpplinq::details::traits::hash("procedures.bar");
+  static const std::vector<std::string>& parameters() {
+    static const auto parameters_ = std::vector<std::string>{
+        "arg1",
+        "arg2",
+        "arg3",
+    };
+    return parameters_;
+  }
+  static const std::string& name() {
+    static const auto name_ = std::string{"procedures.bar"};
+    return name_;
+  }
+  static cpplinq::details::cursor invoke(const procedure_arguments& args) {
+    auto all_args = reconcile<procedure_trait<hash>>(args);
+    return procedures::instance().bar(
+        parameter_trait<cpplinq::details::traits::hash("arg1"),
+                        hash>::from_string(all_args[0].second),
+        parameter_trait<cpplinq::details::traits::hash("arg2"),
+                        hash>::from_string(all_args[1].second),
+        parameter_trait<cpplinq::details::traits::hash("arg3"),
+                        hash>::from_string(all_args[2].second));
+  }
+};
+static auto registered_procedures_bar = []() {
+  using trait =
+      procedure_trait<cpplinq::details::traits::hash("procedures.bar")>;
+  cpplinq::details::procedure_registry::instance().add(
+      trait::name(), cpplinq::details::traits::any_procedure{trait{}});
+  return true;
+}();
+}  // namespace cpplinq::details::traits
 ```

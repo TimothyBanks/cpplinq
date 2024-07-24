@@ -313,3 +313,71 @@ BOOST_AUTO_TEST_CASE(select_context) {
   cursor = cpplinq::sql_context::execute(
       "SELECT indentifier, data FROM foobar_table");
 }
+
+struct procedures {
+  // The only concept enforced on stored procedures is the singleton
+  // instance.
+  static procedures& instance() {
+    static auto instance_ = procedures{};
+    return instance_;
+  }
+
+  // TODO:  Provide user define conversion operators on cursor
+  //        so that this method can just return a string, for example.
+  cpplinq::details::cursor foo(const std::string& arg) {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("foo");
+    result.results.back().emplace_back(arg);
+    return result;
+  }
+
+  cpplinq::details::cursor bar(const std::string& arg1,
+                               uint64_t arg2,
+                               double arg3) {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("bar");
+    result.results.back().emplace_back(arg1);
+    result.results.back().emplace_back(std::to_string(arg2));
+    result.results.back().emplace_back(std::to_string(arg3));
+    return result;
+  }
+
+  cpplinq::details::cursor foobar() {
+    auto result = cpplinq::details::cursor{};
+    result.results.emplace_back();
+    result.results.back().emplace_back("foobar");
+    return result;
+  }
+};
+
+// This makes the procedures known to cpplinq.
+DECLARE_PROCEDURE("procedures.foo",
+                  procedures,
+                  foo,
+                  ((arg, std::string, "hello world")));
+DECLARE_PROCEDURE("procedures.bar",
+                  procedures,
+                  bar,
+                  ((arg1, std::string))((arg2,
+                                         uint64_t))((arg3, double, 3.14)));
+DECLARE_PROCEDURE_NO_PARAMETERS("procedures.foobar", procedures, foobar);
+
+BOOST_AUTO_TEST_CASE(call_context) {
+  auto cursor = cpplinq::sql_context::execute("CALL procedures.foo();");
+  cursor = cpplinq::sql_context::execute("CALL procedures.foo('Hello foo');");
+  cursor =
+      cpplinq::sql_context::execute("CALL procedures.foo(arg => 'Hello foo');");
+  cursor = cpplinq::sql_context::execute(
+      "CALL procedures.bar('Hello bar', 42, 1.1);");
+  cursor =
+      cpplinq::sql_context::execute("CALL procedures.bar('Hello bar', 42);");
+  cursor = cpplinq::sql_context::execute(
+      "CALL procedures.bar('Hello bar', arg2 => 42);");
+  cursor = cpplinq::sql_context::execute(
+      "CALL procedures.bar('Hello bar', arg3 =>1.5, arg2 => 42);");
+  cursor = cpplinq::sql_context::execute(
+      "CALL procedures.bar(arg1 => 'Hello bar', arg3 =>1.5, arg2 => 42);");
+  cursor = cpplinq::sql_context::execute("CALL procedures.foobar();");
+}

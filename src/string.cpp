@@ -4,7 +4,7 @@
 namespace cpplinq::details::string {
 
 std::string& trim(std::string& s) {
-  static auto chars_to_trim = std::unordered_set<char>{' ', '\'', '\"', '\0'};
+  static auto chars_to_trim = std::unordered_set<char>{' ', '\'', '\"', '\0', '(', ')', ';'};
   while (chars_to_trim.count(s.back()) > 0) {
     s.pop_back();
   }
