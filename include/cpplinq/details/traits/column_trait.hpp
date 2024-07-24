@@ -1,5 +1,6 @@
 #pragma once
 #include <boost/preprocessor.hpp>
+#include <cpplinq/details/information_schema/schema.hpp>
 #include <cpplinq/details/traits/hash.hpp>
 
 // template <size_t Hash, size_t Table_hash>
@@ -14,7 +15,8 @@
 //     }
 // };
 
-#define DECLARE_COLUMN(__ignored__, __user_defined_tuple__, __column_tuple__) \
+#define DECLARE_COLUMN(__ignored__, __user_defined_tuple__, __I__,            \
+                       __column_tuple__)                                      \
   template <>                                                                 \
   struct column_trait<cpplinq::details::traits::hash(                         \
       BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))),       \
@@ -36,10 +38,19 @@
   };                                                                          \
   static auto BOOST_PP_CAT(                                                   \
       registered_,                                                            \
-      BOOST_PP_CAT(                                                           \
-          BOOST_PP_TUPLE_ELEM(3, 1, __user_defined_tuple__),                  \
-          BOOST_PP_CAT(_, BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__)))) =    \
-      []() { return true; }();
+      BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(3, 1, __user_defined_tuple__),         \
+                   BOOST_PP_CAT(_, BOOST_PP_TUPLE_ELEM(                       \
+                                       2, 0, __column_tuple__)))) = []() {    \
+    auto column_def = cpplinq::details::information_schema::column{           \
+        .table_name = BOOST_PP_TUPLE_ELEM(3, 0, __user_defined_tuple__),      \
+        .column_name = BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__)),                     \
+            .ordinal_position = __I__,                                        \
+            .data_type = BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 1, __column_tuple__)),                                     \
+            };                                                                \
+    cpplinq::details::information_schema::columns::instance().push(           \
+        std::move(column_def));                                               \
+    return true;                                                              \
+  }();
 
 namespace cpplinq::details::traits {
 

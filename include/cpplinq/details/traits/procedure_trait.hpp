@@ -1,51 +1,91 @@
 #pragma once
 #include <cpplinq/details/cpplinq_exception.hpp>
+#include <cpplinq/details/information_schema/schema.hpp>
 #include <cpplinq/details/procedure_registry.hpp>
 #include <cpplinq/details/traits/underlying_column_type.hpp>
 #include <tuple>
 #include <vector>
 
+#define DEFAULT_VALUE_AS_STRING(__parameter_tuple__)                       \
+  BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 3), \
+              BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM( \
+                        BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 2, __parameter_tuple__)),          \
+                                 "")
+
+#define DEFAULT_VALUE(__parameter_tuple__)                                  \
+  BOOST_PP_IF(                                                              \
+      BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 3),          \
+      type{BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 2, \
+                               __parameter_tuple__)},                       \
+      type{})
+
 // __param_tuple__  = (name, type, [default])
-#define DECLARE_PARAMETER(__ignored__, __procedure_name__, __I__,           \
-                          __param_tuple__)                                  \
-  template <>                                                               \
-  struct parameter_trait<cpplinq::details::traits::hash(                    \
-      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__))),      \
-      cpplinq::details::traits::hash(__procedure_name__)> {                 \
-    constexpr static auto hash =                                            \
-        cpplinq::details::traits::hash(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__)));    \
-    constexpr static auto procedure_hash =                                  \
-        cpplinq::details::traits::hash(__procedure_name__);                 \
-    constexpr static auto position = size_t{__I__};                         \
-    using type = BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__),  \
-                                     1,                                     \
-                                     __param_tuple__);                      \
-    static type default_value() {                                           \
-      static const auto default_value_ = BOOST_PP_IF(                       \
-          BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(__param_tuple__), 3),          \
-          type{BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 2, \
-                                   __param_tuple__)},                       \
-          type{});                                                          \
-      return default_value_;                                                \
-    }                                                                       \
-                                                                            \
-    static const type from_string(const std::string& value) {               \
-      if (value.empty()) {                                                  \
-        return default_value();                                             \
-      }                                                                     \
-      return cpplinq::details::traits::underlying_column_type<              \
-          type>::from_string(value);                                        \
-    }                                                                       \
-    static const std::string& procedure_name() {                            \
-      static const auto name_ = std::string{__procedure_name__};            \
-      return name_;                                                         \
-    }                                                                       \
-    static const std::string& name() {                                      \
-      static const auto name_ =                                             \
-          std::string{BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__))};  \
-      return name_;                                                         \
-    }                                                                       \
+#define DECLARE_PARAMETER(__ignored__, __procedure_name__, __I__,          \
+                          __param_tuple__)                                 \
+  template <>                                                              \
+  struct parameter_trait<cpplinq::details::traits::hash(                   \
+      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__))),     \
+      cpplinq::details::traits::hash(__procedure_name__)> {                \
+    constexpr static auto hash =                                           \
+        cpplinq::details::traits::hash(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__)));   \
+    constexpr static auto procedure_hash =                                 \
+        cpplinq::details::traits::hash(__procedure_name__);                \
+    constexpr static auto position = size_t{__I__};                        \
+    using type = BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), \
+                                     1,                                    \
+                                     __param_tuple__);                     \
+    static type default_value() {                                          \
+      static const auto default_value_ = DEFAULT_VALUE(__param_tuple__);   \
+      return default_value_;                                               \
+    }                                                                      \
+                                                                           \
+    static const type from_string(const std::string& value) {              \
+      if (value.empty()) {                                                 \
+        return default_value();                                            \
+      }                                                                    \
+      return cpplinq::details::traits::underlying_column_type<             \
+          type>::from_string(value);                                       \
+    }                                                                      \
+    static const std::string& procedure_name() {                           \
+      static const auto name_ = std::string{__procedure_name__};           \
+      return name_;                                                        \
+    }                                                                      \
+    static const std::string& name() {                                     \
+      static const auto name_ =                                            \
+          std::string{BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(BOOST_PP_TUPLE_SIZE(__param_tuple__), 0, __param_tuple__))}; \
+      return name_;                                                        \
+    }                                                                      \
   };
+
+// __procedure_tuple__ = (__procecdure_name__, __procedure_type__,
+// __procedure_method__)
+#define REGISTER_PARAMETER(__ignored__, __procedure_tuple__, __I__,          \
+                           __parameter_tuple__)                              \
+  static auto BOOST_PP_CAT(                                                  \
+      registed_,                                                             \
+      BOOST_PP_CAT(                                                          \
+          BOOST_PP_TUPLE_ELEM(3, 1, __procedure_tuple__),                    \
+          BOOST_PP_CAT(                                                      \
+              _, BOOST_PP_CAT(                                               \
+                     BOOST_PP_TUPLE_ELEM(3, 2, __procedure_tuple__),         \
+                     BOOST_PP_CAT(                                           \
+                         _, BOOST_PP_TUPLE_ELEM(                             \
+                                BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 0, \
+                                __parameter_tuple__)))))) = []() {           \
+    auto parameter_def = cpplinq::details::information_schema::parameter{    \
+        .specific_name = BOOST_PP_TUPLE_ELEM(3, 0, __procedure_tuple__),     \
+        .ordinal_position = __I__,                                           \
+        .parameter_name = BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM( \
+            BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 0, __parameter_tuple__)),        \
+            .data_type = BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM( \
+            BOOST_PP_TUPLE_SIZE(__parameter_tuple__), 1, __parameter_tuple__)),          \
+                .parameter_default =                                         \
+                    DEFAULT_VALUE_AS_STRING(__parameter_tuple__),            \
+            };                                                               \
+    cpplinq::details::information_schema::parameters::instance().push(       \
+        std::move(parameter_def));                                           \
+    return true;                                                             \
+  }();
 
 #define CONVERT_PARAMETER(__ignored_1__, __ignored_2__, __I__,         \
                           __param_tuple__)                             \
@@ -67,6 +107,10 @@
         procedure_trait<cpplinq::details::traits::hash(__procedure_name__)>; \
     cpplinq::details::procedure_registry::instance().add(                    \
         trait::name(), cpplinq::details::traits::any_procedure{trait{}});    \
+    auto procedure_def = cpplinq::details::information_schema::routine{      \
+        .routine_name = __procedure_name__};                                 \
+    cpplinq::details::information_schema::routines::instance().push(         \
+        std::move(procedure_def));                                           \
     return true;                                                             \
   }();
 
@@ -100,6 +144,11 @@
           BOOST_PP_SEQ_FOR_EACH_I(CONVERT_PARAMETER, _, __parameters__));      \
     }                                                                          \
   };                                                                           \
+  BOOST_PP_SEQ_FOR_EACH_I(REGISTER_PARAMETER,                                  \
+                          (__procedure_name__,                                 \
+                           __procedure_type__,                                 \
+                           __procedure_method__),                              \
+                          __parameters__)                                      \
   REGISTER_PROCEDURE(__procedure_name__,                                       \
                      __procedure_type__,                                       \
                      __procedure_method__)                                     \

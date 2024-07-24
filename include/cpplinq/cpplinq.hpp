@@ -7,6 +7,8 @@
 #include <cpplinq/details/cpplinq_exception.hpp>
 #include <cpplinq/details/cursor.hpp>
 #include <cpplinq/details/delete_context.hpp>
+#include <cpplinq/details/information_schema/schema.hpp>
+#include <cpplinq/details/information_schema/table_index.hpp>
 #include <cpplinq/details/insert_context.hpp>
 #include <cpplinq/details/operators/and.hpp>
 #include <cpplinq/details/operators/between.hpp>

@@ -109,9 +109,9 @@
 #define DECLARE_TABLE(__table_name__, __table_type__, __record_type__,         \
                       __columns__, __indices__)                                \
   namespace cpplinq::details::traits {                                         \
-  BOOST_PP_SEQ_FOR_EACH(DECLARE_COLUMN,                                        \
-                        (__table_name__, __table_type__, __record_type__),     \
-                        __columns__)                                           \
+  BOOST_PP_SEQ_FOR_EACH_I(DECLARE_COLUMN,                                      \
+                          (__table_name__, __table_type__, __record_type__),   \
+                          __columns__)                                         \
   template <>                                                                  \
   struct table_trait<__table_type__,                                           \
                      __record_type__,                                          \
@@ -192,6 +192,11 @@
                               cpplinq::details::traits::hash(__table_name__)>; \
     cpplinq::details::table_registry::instance().add(                          \
         __table_name__, cpplinq::details::traits::any_table{trait{}});         \
+    auto table_def = cpplinq::details::information_schema::table{              \
+        .table_name = __table_name__,                                          \
+    };                                                                         \
+    cpplinq::details::information_schema::tables::instance().push(             \
+        std::move(table_def));                                                 \
     return true;                                                               \
   }();                                                                         \
   using BOOST_PP_CAT(__table_type__, _table_trait) =                           \

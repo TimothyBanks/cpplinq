@@ -76,11 +76,11 @@ columns& columns::instance() {
 
 void columns::push(record_type record) {
   records_.emplace_back();
-  records_.back() = std::move(record);
   index::instance().push(
       std::make_tuple(record.table_catalog, record.table_schema,
                       record.table_name, record.column_name),
       records_.size() - 1);
+  records_.back() = std::move(record);
 }
 
 void columns::pop(size_t index) {
@@ -112,11 +112,11 @@ parameters& parameters::instance() {
 
 void parameters::push(record_type record) {
   records_.emplace_back();
-  records_.back() = std::move(record);
   index::instance().push(
       std::make_tuple(record.specific_catalog, record.specific_schema,
                       record.specific_name, record.parameter_name),
       records_.size() - 1);
+  records_.back() = std::move(record);
 }
 
 void parameters::pop(size_t index) {
@@ -148,11 +148,11 @@ routines& routines::instance() {
 
 void routines::push(record_type record) {
   records_.emplace_back();
-  records_.back() = std::move(record);
   index::instance().push(
       std::make_tuple(record.specific_catalog, record.specific_schema,
                       record.specific_name, record.routine_name),
       records_.size() - 1);
+  records_.back() = std::move(record);
 }
 
 void routines::pop(size_t index) {
@@ -184,11 +184,11 @@ tables& tables::instance() {
 
 void tables::push(record_type record) {
   records_.emplace_back();
-  records_.back() = std::move(record);
   index::instance().push(
       std::make_tuple(record.table_catalog, record.table_schema,
                       record.table_name),
       records_.size() - 1);
+  records_.back() = std::move(record);
 }
 
 void tables::pop(size_t index) {
