@@ -19,7 +19,6 @@ struct foobar_record {
   std::string data;
 };
 
-
 // cpplinq utilizes a concept called duck typing.
 // For a table, the following concepts are expected:
 // 1.  It is a singleton and exposes a static method called instance.
