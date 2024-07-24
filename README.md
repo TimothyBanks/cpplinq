@@ -663,3 +663,7 @@ static auto registered_procedures_bar = []() {
 }();
 }  // namespace cpplinq::details::traits
 ```
+
+## INFORMATION_SCHEMA
+
+TBD
