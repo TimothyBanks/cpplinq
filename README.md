@@ -667,3 +667,7 @@ static auto registered_procedures_bar = []() {
 ## INFORMATION_SCHEMA
 
 TBD
+
+## Aggregates
+
+TBD

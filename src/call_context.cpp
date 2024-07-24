@@ -34,8 +34,8 @@ call_context make_call_context(const std::string& sql_) {
       name = details::string::trim(subtokens.front());
     }
     context.arguments.emplace_back();
-    context.arguments.back() =
-        std::make_pair(std::move(name), details::string::trim(subtokens.back()));
+    context.arguments.back() = std::make_pair(
+        std::move(name), details::string::trim(subtokens.back()));
   }
 
   tokens = regex::split(tokens.front(), "CALL ");
