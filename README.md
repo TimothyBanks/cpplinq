@@ -9,7 +9,7 @@ For now, it is much easier to show an example of the library to demonstrate how 
 3.  Macros.  Most of this library is built on the concept of code generation and that is exactly what Macros give us.
 4. Type erasure.  Because who needs type information anyways.
 
-Additional features that could be looked into is the use of an LLVM and clang compiler plugin that could generate this code at compile time using simple annotations on your types.
+Additional features that could be looked into is the use of an LLVM and clang compiler plugin that could generate this code at compile time using simple annotations on your types. Another possible update would be the use of a true lexer and parser such as boost spirit but for now regex gets the job done.
 
 ## DECLARE_TABLE
 To declare and expose tables through this API, you can refer to the following examples.
