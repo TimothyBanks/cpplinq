@@ -1,4 +1,4 @@
-#include <cpplinq/details/regex.hpp>
+#include <cpplinq/detail/regex.hpp>
 #include <regex>
 
 namespace cpplinq::regex {

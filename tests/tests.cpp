@@ -28,13 +28,13 @@ struct foobar_record {
 // 4.  As the development of this library progresses, there may be additional
 // concepts centered around secondary indices.
 struct foo_table {
-  friend class cpplinq::details::information_schema::table_index<foo_table,
+  friend class cpplinq::detail::information_schema::table_index<foo_table,
                                                                  size_t>;
 
   using record_type = foo_record;
   using backing_store = std::vector<record_type>;
   using primary_index_type =
-      cpplinq::details::information_schema::table_index<foo_table, size_t>;
+      cpplinq::detail::information_schema::table_index<foo_table, size_t>;
 
   backing_store records_;
 
@@ -77,13 +77,13 @@ struct foo_table {
 };
 
 struct foobar_table {
-  friend class cpplinq::details::information_schema::table_index<foobar_table,
+  friend class cpplinq::detail::information_schema::table_index<foobar_table,
                                                                  size_t>;
 
   using record_type = foobar_record;
   using backing_store = std::vector<record_type>;
   using primary_index_type =
-      cpplinq::details::information_schema::table_index<foobar_table, size_t>;
+      cpplinq::detail::information_schema::table_index<foobar_table, size_t>;
 
   backing_store records_;
 
@@ -128,7 +128,7 @@ struct foobar_table {
 
 // This makes the table known to cpplinq.
 using foo_table_index_1 =
-    cpplinq::details::information_schema::table_index<foo_table, size_t>;
+    cpplinq::detail::information_schema::table_index<foo_table, size_t>;
 DECLARE_TABLE("foo_table",
               foo_table,
               foo_record,
@@ -137,7 +137,7 @@ DECLARE_TABLE("foo_table",
               (("id", foo_table_index_1, ((id, size_t)))));
 
 using foobar_table_index_1 =
-    cpplinq::details::information_schema::table_index<foobar_table, size_t>;
+    cpplinq::detail::information_schema::table_index<foobar_table, size_t>;
 DECLARE_TABLE("foobar_table",
               foobar_table,
               foobar_record,
@@ -193,18 +193,18 @@ struct procedures {
 
   // TODO:  Provide user define conversion operators on cursor
   //        so that this method can just return a string, for example.
-  cpplinq::details::cursor foo(const std::string& arg) {
-    auto result = cpplinq::details::cursor{};
+  cpplinq::detail::cursor foo(const std::string& arg) {
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("foo");
     result.results.back().emplace_back(arg);
     return result;
   }
 
-  cpplinq::details::cursor bar(const std::string& arg1,
+  cpplinq::detail::cursor bar(const std::string& arg1,
                                uint64_t arg2,
                                double arg3) {
-    auto result = cpplinq::details::cursor{};
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("bar");
     result.results.back().emplace_back(arg1);
@@ -213,8 +213,8 @@ struct procedures {
     return result;
   }
 
-  cpplinq::details::cursor foobar() {
-    auto result = cpplinq::details::cursor{};
+  cpplinq::detail::cursor foobar() {
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("foobar");
     return result;

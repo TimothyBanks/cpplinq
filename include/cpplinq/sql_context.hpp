@@ -1,9 +1,9 @@
 #pragma once
-#include <cpplinq/details/cursor.hpp>
+#include <cpplinq/detail/cursor.hpp>
 #include <string>
 
 namespace cpplinq::sql_context {
 
-cpplinq::details::cursor execute(const std::string& sql);
+cpplinq::detail::cursor execute(const std::string& sql);
 
 }

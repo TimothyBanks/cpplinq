@@ -1,3 +1,3 @@
-#include <cpplinq/details/traits/hash.hpp>
+#include <cpplinq/detail/traits/hash.hpp>
 
-namespace cpplinq::details::traits {}  // namespace cpplinq::details::traits
+namespace cpplinq::detail::traits {}  // namespace cpplinq::detail::traits
