@@ -234,46 +234,46 @@ auto cursor = cpplinq::sql_context::execute("SELECT foo, bar, foobar FROM foo_ta
 In regards to the `DECLARE_TABLE` macro, it will expand to something like this:
 
 ```
-namespace cpplinq::details::traits {
+namespace cpplinq::detail::traits {
 template <>
-struct column_trait<cpplinq::details::traits::hash("id"),
-                    cpplinq::details::traits::hash("foo_table")> {
-  static constexpr auto hash = cpplinq::details::traits::hash("id");
+struct column_trait<cpplinq::detail::traits::hash("id"),
+                    cpplinq::detail::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::detail::traits::hash("id");
   static constexpr auto table_hash =
-      cpplinq::details::traits::hash("foo_table");
+      cpplinq::detail::traits::hash("foo_table");
   using column_type = size_t;
   static const auto& name() { return "id"; }
   static auto& value(const foo_record& r) { return r.id; }
 };
 static auto registered_foo_table_id = []() { return true; }();
 template <>
-struct column_trait<cpplinq::details::traits::hash("foo"),
-                    cpplinq::details::traits::hash("foo_table")> {
-  static constexpr auto hash = cpplinq::details::traits::hash("foo");
+struct column_trait<cpplinq::detail::traits::hash("foo"),
+                    cpplinq::detail::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::detail::traits::hash("foo");
   static constexpr auto table_hash =
-      cpplinq::details::traits::hash("foo_table");
+      cpplinq::detail::traits::hash("foo_table");
   using column_type = std::string;
   static const auto& name() { return "foo"; }
   static auto& value(const foo_record& r) { return r.foo; }
 };
 static auto registered_foo_table_foo = []() { return true; }();
 template <>
-struct column_trait<cpplinq::details::traits::hash("bar"),
-                    cpplinq::details::traits::hash("foo_table")> {
-  static constexpr auto hash = cpplinq::details::traits::hash("bar");
+struct column_trait<cpplinq::detail::traits::hash("bar"),
+                    cpplinq::detail::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::detail::traits::hash("bar");
   static constexpr auto table_hash =
-      cpplinq::details::traits::hash("foo_table");
+      cpplinq::detail::traits::hash("foo_table");
   using column_type = float;
   static const auto& name() { return "bar"; }
   static auto& value(const foo_record& r) { return r.bar; }
 };
 static auto registered_foo_table_bar = []() { return true; }();
 template <>
-struct column_trait<cpplinq::details::traits::hash("foobar"),
-                    cpplinq::details::traits::hash("foo_table")> {
-  static constexpr auto hash = cpplinq::details::traits::hash("foobar");
+struct column_trait<cpplinq::detail::traits::hash("foobar"),
+                    cpplinq::detail::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::detail::traits::hash("foobar");
   static constexpr auto table_hash =
-      cpplinq::details::traits::hash("foo_table");
+      cpplinq::detail::traits::hash("foo_table");
   using column_type = std::vector<std::string>;
   static const auto& name() { return "foobar"; }
   static auto& value(const foo_record& r) { return r.foobar; }
@@ -282,13 +282,13 @@ static auto registered_foo_table_foobar = []() { return true; }();
 template <>
 struct table_trait<foo_table,
                    foo_record,
-                   cpplinq::details::traits::hash("foo_table")> {
-  static constexpr auto hash = cpplinq::details::traits::hash("foo_table");
+                   cpplinq::detail::traits::hash("foo_table")> {
+  static constexpr auto hash = cpplinq::detail::traits::hash("foo_table");
   using table_type = foo_table;
   using record_type = foo_record;
   using type = table_trait<foo_table,
                            foo_record,
-                           cpplinq::details::traits::hash("foo_table")>;
+                           cpplinq::detail::traits::hash("foo_table")>;
   static const std::string& name() {
     static const auto name = std::string{"foo_table"};
     return name;
@@ -307,29 +307,29 @@ struct table_trait<foo_table,
   static void invoke(const std::string& column_name, Functor f) {
     if (column_name == "id") {
       auto trait_instance =
-          column_trait<cpplinq::details::traits::hash("id"),
-                       cpplinq::details::traits::hash("foo_table")>{};
+          column_trait<cpplinq::detail::traits::hash("id"),
+                       cpplinq::detail::traits::hash("foo_table")>{};
       f(trait_instance);
       return;
     }
     if (column_name == "foo") {
       auto trait_instance =
-          column_trait<cpplinq::details::traits::hash("foo"),
-                       cpplinq::details::traits::hash("foo_table")>{};
+          column_trait<cpplinq::detail::traits::hash("foo"),
+                       cpplinq::detail::traits::hash("foo_table")>{};
       f(trait_instance);
       return;
     }
     if (column_name == "bar") {
       auto trait_instance =
-          column_trait<cpplinq::details::traits::hash("bar"),
-                       cpplinq::details::traits::hash("foo_table")>{};
+          column_trait<cpplinq::detail::traits::hash("bar"),
+                       cpplinq::detail::traits::hash("foo_table")>{};
       f(trait_instance);
       return;
     }
     if (column_name == "foobar") {
       auto trait_instance =
-          column_trait<cpplinq::details::traits::hash("foobar"),
-                       cpplinq::details::traits::hash("foo_table")>{};
+          column_trait<cpplinq::detail::traits::hash("foobar"),
+                       cpplinq::detail::traits::hash("foo_table")>{};
       f(trait_instance);
       return;
     }
@@ -362,43 +362,43 @@ struct table_trait<foo_table,
   }
   static bool evaluate(
       const record_type& record,
-      cpplinq::details::operators::expression_tree& expression) {
-    return cpplinq::details::operators::evaluate<type>(record, expression);
+      cpplinq::detail::operators::expression_tree& expression) {
+    return cpplinq::detail::operators::evaluate<type>(record, expression);
   }
-  static std::unordered_set<cpplinq::details::operators::comparison_result>
+  static std::unordered_set<cpplinq::detail::operators::comparison_result>
   evaluate(const std::string& column_name,
            const record_type& record,
            const std::any& value) {
     auto result =
-        std::unordered_set<cpplinq::details::operators::comparison_result>{};
+        std::unordered_set<cpplinq::detail::operators::comparison_result>{};
     invoke(column_name, [&](const auto& trait) {
       const auto& column_value = trait.value(record);
       const auto& op_value = std::any_cast<
           const typename std::decay_t<decltype(trait)>::column_type&>(value);
-      result = cpplinq::details::operators::evaluate(column_value, op_value);
+      result = cpplinq::detail::operators::evaluate(column_value, op_value);
     });
     return result;
   }
 };
 static auto registered_foo_table = []() {
   using trait = table_trait<foo_table, foo_record,
-                            cpplinq::details::traits::hash("foo_table")>;
-  cpplinq::details::table_registry::instance().add(
-      "foo_table", cpplinq::details::traits::any_table{trait{}});
+                            cpplinq::detail::traits::hash("foo_table")>;
+  cpplinq::detail::table_registry::instance().add(
+      "foo_table", cpplinq::detail::traits::any_table{trait{}});
   return true;
 }();
 using foo_table_table_trait =
     table_trait<foo_table,
                 foo_record,
-                cpplinq::details::traits::hash("foo_table")>;
+                cpplinq::detail::traits::hash("foo_table")>;
 template <>
 struct index_trait<foo_table_index_1,
-                   cpplinq::details::traits::hash("id"),
+                   cpplinq::detail::traits::hash("id"),
                    foo_table_table_trait::hash> {
   using index_type = foo_table_index_1;
   using iterator_type = typename index_type::iterator;
   using tuple_type = typename index_type::tuple_type;
-  static constexpr auto hash = cpplinq::details::traits::hash("id");
+  static constexpr auto hash = cpplinq::detail::traits::hash("id");
   using table_trait = foo_table_table_trait;
   static const std::string& name() {
     static const auto name_ = std::string{"id"};
@@ -418,7 +418,7 @@ struct index_trait<foo_table_index_1,
   }
   static tuple_type to_tuple(const std::vector<std::string>& v) {
     if (v.size() != std::tuple_size<tuple_type>()) {
-      throw cpplinq::details::cpplinq_exception(
+      throw cpplinq::detail::cpplinq_exception(
           "Input not the same size as tuple type.");
     }
     auto t = tuple_type{};
@@ -438,7 +438,7 @@ any_index foo_table_table_trait::index_for(const std::string& name) {
   const static auto indices = std::map<std::string, any_index>{
       {"id",
        {foo_table_table_trait{},
-        index_trait<foo_table_index_1, cpplinq::details::traits::hash("id"),
+        index_trait<foo_table_index_1, cpplinq::detail::traits::hash("id"),
                     foo_table_table_trait::hash>{}}},
   };
   if (indices.empty()) {
@@ -453,7 +453,7 @@ any_index foo_table_table_trait::index_for(const std::string& name) {
   }
   return it->second;
 }
-}  // namespace cpplinq::details::traits
+}  // namespace cpplinq::detail::traits
 
 ```
 
@@ -472,18 +472,18 @@ struct procedures {
 
   // TODO:  Provide user define conversion operators on cursor
   //        so that this method can just return a string, for example.
-  cpplinq::details::cursor foo(const std::string& arg) {
-    auto result = cpplinq::details::cursor{};
+  cpplinq::detail::cursor foo(const std::string& arg) {
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("foo");
     result.results.back().emplace_back(arg);
     return result;
   }
 
-  cpplinq::details::cursor bar(const std::string& arg1,
+  cpplinq::detail::cursor bar(const std::string& arg1,
                                uint64_t arg2,
                                double arg3) {
-    auto result = cpplinq::details::cursor{};
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("bar");
     result.results.back().emplace_back(arg1);
@@ -492,8 +492,8 @@ struct procedures {
     return result;
   }
 
-  cpplinq::details::cursor foobar() {
-    auto result = cpplinq::details::cursor{};
+  cpplinq::detail::cursor foobar() {
+    auto result = cpplinq::detail::cursor{};
     result.results.emplace_back();
     result.results.back().emplace_back("foobar");
     return result;
@@ -542,13 +542,13 @@ DECLARE_PROCEDURE("procedures.bar",
 ```                                       
 and the code generated from that macro call:
 ```
-namespace cpplinq::details::traits {
+namespace cpplinq::detail::traits {
 template <>
-struct parameter_trait<cpplinq::details::traits::hash("arg1"),
-                       cpplinq::details::traits::hash("procedures.bar")> {
-  constexpr static auto hash = cpplinq::details::traits::hash("arg1");
+struct parameter_trait<cpplinq::detail::traits::hash("arg1"),
+                       cpplinq::detail::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::detail::traits::hash("arg1");
   constexpr static auto procedure_hash =
-      cpplinq::details::traits::hash("procedures.bar");
+      cpplinq::detail::traits::hash("procedures.bar");
   constexpr static auto position = size_t{0};
   using type = std::string;
   static type default_value() {
@@ -559,7 +559,7 @@ struct parameter_trait<cpplinq::details::traits::hash("arg1"),
     if (value.empty()) {
       return default_value();
     }
-    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+    return cpplinq::detail::traits::underlying_column_type<type>::from_string(
         value);
   }
   static const std::string& procedure_name() {
@@ -572,11 +572,11 @@ struct parameter_trait<cpplinq::details::traits::hash("arg1"),
   }
 };
 template <>
-struct parameter_trait<cpplinq::details::traits::hash("arg2"),
-                       cpplinq::details::traits::hash("procedures.bar")> {
-  constexpr static auto hash = cpplinq::details::traits::hash("arg2");
+struct parameter_trait<cpplinq::detail::traits::hash("arg2"),
+                       cpplinq::detail::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::detail::traits::hash("arg2");
   constexpr static auto procedure_hash =
-      cpplinq::details::traits::hash("procedures.bar");
+      cpplinq::detail::traits::hash("procedures.bar");
   constexpr static auto position = size_t{1};
   using type = uint64_t;
   static type default_value() {
@@ -587,7 +587,7 @@ struct parameter_trait<cpplinq::details::traits::hash("arg2"),
     if (value.empty()) {
       return default_value();
     }
-    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+    return cpplinq::detail::traits::underlying_column_type<type>::from_string(
         value);
   }
   static const std::string& procedure_name() {
@@ -600,11 +600,11 @@ struct parameter_trait<cpplinq::details::traits::hash("arg2"),
   }
 };
 template <>
-struct parameter_trait<cpplinq::details::traits::hash("arg3"),
-                       cpplinq::details::traits::hash("procedures.bar")> {
-  constexpr static auto hash = cpplinq::details::traits::hash("arg3");
+struct parameter_trait<cpplinq::detail::traits::hash("arg3"),
+                       cpplinq::detail::traits::hash("procedures.bar")> {
+  constexpr static auto hash = cpplinq::detail::traits::hash("arg3");
   constexpr static auto procedure_hash =
-      cpplinq::details::traits::hash("procedures.bar");
+      cpplinq::detail::traits::hash("procedures.bar");
   constexpr static auto position = size_t{2};
   using type = double;
   static type default_value() {
@@ -615,7 +615,7 @@ struct parameter_trait<cpplinq::details::traits::hash("arg3"),
     if (value.empty()) {
       return default_value();
     }
-    return cpplinq::details::traits::underlying_column_type<type>::from_string(
+    return cpplinq::detail::traits::underlying_column_type<type>::from_string(
         value);
   }
   static const std::string& procedure_name() {
@@ -628,9 +628,9 @@ struct parameter_trait<cpplinq::details::traits::hash("arg3"),
   }
 };
 template <>
-struct procedure_trait<cpplinq::details::traits::hash("procedures.bar")> {
+struct procedure_trait<cpplinq::detail::traits::hash("procedures.bar")> {
   using procedure_type = procedures;
-  static constexpr auto hash = cpplinq::details::traits::hash("procedures.bar");
+  static constexpr auto hash = cpplinq::detail::traits::hash("procedures.bar");
   static const std::vector<std::string>& parameters() {
     static const auto parameters_ = std::vector<std::string>{
         "arg1",
@@ -643,65 +643,65 @@ struct procedure_trait<cpplinq::details::traits::hash("procedures.bar")> {
     static const auto name_ = std::string{"procedures.bar"};
     return name_;
   }
-  static cpplinq::details::cursor invoke(const procedure_arguments& args) {
+  static cpplinq::detail::cursor invoke(const procedure_arguments& args) {
     auto all_args = reconcile<procedure_trait<hash>>(args);
     return procedures::instance().bar(
-        parameter_trait<cpplinq::details::traits::hash("arg1"),
+        parameter_trait<cpplinq::detail::traits::hash("arg1"),
                         hash>::from_string(all_args[0].second),
-        parameter_trait<cpplinq::details::traits::hash("arg2"),
+        parameter_trait<cpplinq::detail::traits::hash("arg2"),
                         hash>::from_string(all_args[1].second),
-        parameter_trait<cpplinq::details::traits::hash("arg3"),
+        parameter_trait<cpplinq::detail::traits::hash("arg3"),
                         hash>::from_string(all_args[2].second));
   }
 };
 static auto registered_procedures_bar_arg1 = []() {
-  auto parameter_def = cpplinq::details::information_schema::parameter{
+  auto parameter_def = cpplinq::detail::information_schema::parameter{
       .specific_name = "procedures.bar",
       .ordinal_position = 0,
       .parameter_name = "arg1",
       .data_type = "std::string",
       .parameter_default = "",
   };
-  cpplinq::details::information_schema::parameters::instance().push(
+  cpplinq::detail::information_schema::parameters::instance().push(
       std::move(parameter_def));
   return true;
 }();
 static auto registered_procedures_bar_arg2 = []() {
-  auto parameter_def = cpplinq::details::information_schema::parameter{
+  auto parameter_def = cpplinq::detail::information_schema::parameter{
       .specific_name = "procedures.bar",
       .ordinal_position = 1,
       .parameter_name = "arg2",
       .data_type = "uint64_t",
       .parameter_default = "",
   };
-  cpplinq::details::information_schema::parameters::instance().push(
+  cpplinq::detail::information_schema::parameters::instance().push(
       std::move(parameter_def));
   return true;
 }();
 static auto registered_procedures_bar_arg3 = []() {
-  auto parameter_def = cpplinq::details::information_schema::parameter{
+  auto parameter_def = cpplinq::detail::information_schema::parameter{
       .specific_name = "procedures.bar",
       .ordinal_position = 2,
       .parameter_name = "arg3",
       .data_type = "double",
       .parameter_default = "3.14",
   };
-  cpplinq::details::information_schema::parameters::instance().push(
+  cpplinq::detail::information_schema::parameters::instance().push(
       std::move(parameter_def));
   return true;
 }();
 static auto registered_procedures_bar = []() {
   using trait =
-      procedure_trait<cpplinq::details::traits::hash("procedures.bar")>;
-  cpplinq::details::procedure_registry::instance().add(
-      trait::name(), cpplinq::details::traits::any_procedure{trait{}});
-  auto procedure_def = cpplinq::details::information_schema::routine{
+      procedure_trait<cpplinq::detail::traits::hash("procedures.bar")>;
+  cpplinq::detail::procedure_registry::instance().add(
+      trait::name(), cpplinq::detail::traits::any_procedure{trait{}});
+  auto procedure_def = cpplinq::detail::information_schema::routine{
       .routine_name = "procedures.bar"};
-  cpplinq::details::information_schema::routines::instance().push(
+  cpplinq::detail::information_schema::routines::instance().push(
       std::move(procedure_def));
   return true;
 }();
-}  // namespace cpplinq::details::traits
+}  // namespace cpplinq::detail::traits
 ```
 
 ## INFORMATION_SCHEMA

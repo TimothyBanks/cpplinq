@@ -1,7 +1,7 @@
-#include <cpplinq/details/string.hpp>
+#include <cpplinq/detail/string.hpp>
 #include <unordered_set>
 
-namespace cpplinq::details::string {
+namespace cpplinq::detail::string {
 
 std::string& trim(std::string& s) {
   static auto chars_to_trim =
@@ -20,4 +20,4 @@ std::string& trim(std::string& s) {
   return s;
 }
 
-}  // namespace cpplinq::details::string
+}  // namespace cpplinq::detail::string

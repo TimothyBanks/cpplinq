@@ -1,7 +1,7 @@
-#include <cpplinq/details/cpplinq_exception.hpp>
-#include <cpplinq/details/procedure_registry.hpp>
+#include <cpplinq/detail/cpplinq_exception.hpp>
+#include <cpplinq/detail/procedure_registry.hpp>
 
-using namespace cpplinq::details;
+using namespace cpplinq::detail;
 
 procedure_registry& procedure_registry::instance() {
   static auto instance = procedure_registry{};
@@ -21,7 +21,7 @@ traits::any_procedure& procedure_registry::find(
     const std::string& procedure_name) {
   auto it = procedures.find(procedure_name);
   if (it == std::end(procedures)) {
-    throw cpplinq::details::cpplinq_exception{"Procedure not found"};
+    throw cpplinq::detail::cpplinq_exception{"Procedure not found"};
   }
   return it->second;
 }
@@ -30,7 +30,7 @@ const traits::any_procedure& procedure_registry::find(
     const std::string& procedure_name) const {
   auto it = procedures.find(procedure_name);
   if (it == std::end(procedures)) {
-    throw cpplinq::details::cpplinq_exception{"Procedure not found"};
+    throw cpplinq::detail::cpplinq_exception{"Procedure not found"};
   }
   return it->second;
 }

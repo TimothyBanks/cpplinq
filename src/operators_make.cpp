@@ -1,10 +1,10 @@
-#include <cpplinq/details/cpplinq_exception.hpp>
-#include <cpplinq/details/operators/make.hpp>
-#include <cpplinq/details/operators/operators.hpp>
-#include <cpplinq/details/regex.hpp>
-#include <cpplinq/details/string.hpp>
+#include <cpplinq/detail/cpplinq_exception.hpp>
+#include <cpplinq/detail/operators/make.hpp>
+#include <cpplinq/detail/operators/operators.hpp>
+#include <cpplinq/detail/regex.hpp>
+#include <cpplinq/detail/string.hpp>
 
-namespace cpplinq::details::operators {
+namespace cpplinq::detail::operators {
 
 operator_ptr make_operator(std::string& sql);
 
@@ -203,12 +203,12 @@ operator_ptr make_operator(std::string& sql) {
   }
 
   push_groups(sql, groups);
-  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
+  throw cpplinq::detail::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_and_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<and_operator>();
-  op->type = cpplinq::details::operators::operator_type::and_;
+  op->type = cpplinq::detail::operators::operator_type::and_;
   op->left_operand = make_operator(left);
   op->right_operand = make_operator(right);
   return op;
@@ -216,12 +216,12 @@ operator_ptr make_and_operator(std::string& left, std::string& right) {
 
 operator_ptr make_between(std::string& left, std::string& right) {
   auto op = std::make_unique<between>();
-  op->type = cpplinq::details::operators::operator_type::between;
-  op->column = std::move(cpplinq::details::string::trim(left));
-  right = cpplinq::details::string::trim(right);
+  op->type = cpplinq::detail::operators::operator_type::between;
+  op->column = std::move(cpplinq::detail::string::trim(left));
+  right = cpplinq::detail::string::trim(right);
   auto tokens = regex::split(right, " AND ");
   if (tokens.size() != 2) {
-    throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
+    throw cpplinq::detail::cpplinq_exception{"Unsupported SQL syntax"};
   }
   op->begin = tokens.front();
   op->end = tokens.back();
@@ -230,9 +230,9 @@ operator_ptr make_between(std::string& left, std::string& right) {
 
 operator_ptr make_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<equal_to>();
-  op->type = cpplinq::details::operators::operator_type::equal_to;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::equal_to;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
@@ -244,17 +244,17 @@ expression_tree make_expression_tree(std::string sql) {
 
 operator_ptr make_greater_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than_equal>();
-  op->type = cpplinq::details::operators::operator_type::greater_than_equal;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::greater_than_equal;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_greater_than(std::string& left, std::string& right) {
   auto op = std::make_unique<greater_than>();
-  op->type = cpplinq::details::operators::operator_type::greater_than;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::greater_than;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
@@ -262,79 +262,79 @@ operator_ptr make_group(std::string& sql) {
   auto group_sql = sql.substr(1);
   group_sql.pop_back();
   auto op = std::make_unique<group>();
-  op->type = cpplinq::details::operators::operator_type::group;
+  op->type = cpplinq::detail::operators::operator_type::group;
   op->root = make_operator(group_sql);
   return op;
 }
 
 operator_ptr make_ilike(std::string& left, std::string& right) {
   auto op = std::make_unique<ilike>();
-  op->type = cpplinq::details::operators::operator_type::ilike;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::ilike;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_in(std::string& left, std::string& right) {
   auto op = std::make_unique<in>();
-  op->type = cpplinq::details::operators::operator_type::in;
-  op->column = std::move(cpplinq::details::string::trim(left));
-  right = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::in;
+  op->column = std::move(cpplinq::detail::string::trim(left));
+  right = std::move(cpplinq::detail::string::trim(right));
   right = right.substr(1);
   right.pop_back();
   auto values = regex::tokenize(right, ',');
   for (auto& value : values) {
-    op->values.emplace(std::move(cpplinq::details::string::trim(value)));
+    op->values.emplace(std::move(cpplinq::detail::string::trim(value)));
   }
   return {};
 }
 
 operator_ptr make_is(std::string& left, std::string& right) {
-  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
+  throw cpplinq::detail::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_less_than_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than_equal>();
-  op->type = cpplinq::details::operators::operator_type::less_than_equal;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::less_than_equal;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_less_than(std::string& left, std::string& right) {
   auto op = std::make_unique<less_than>();
-  op->type = cpplinq::details::operators::operator_type::less_than;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::less_than;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_like(std::string& left, std::string& right) {
   auto op = std::make_unique<like>();
-  op->type = cpplinq::details::operators::operator_type::like;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::like;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_not_equal(std::string& left, std::string& right) {
   auto op = std::make_unique<not_equal>();
-  op->type = cpplinq::details::operators::operator_type::not_equal;
-  op->column_name = std::move(cpplinq::details::string::trim(left));
-  op->value = std::move(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::not_equal;
+  op->column_name = std::move(cpplinq::detail::string::trim(left));
+  op->value = std::move(cpplinq::detail::string::trim(right));
   return op;
 }
 
 operator_ptr make_not_operator(std::string& left, std::string& right) {
-  throw cpplinq::details::cpplinq_exception{"Unsupported SQL syntax"};
+  throw cpplinq::detail::cpplinq_exception{"Unsupported SQL syntax"};
 }
 
 operator_ptr make_or_operator(std::string& left, std::string& right) {
   auto op = std::make_unique<or_operator>();
-  op->type = cpplinq::details::operators::operator_type::or_;
-  op->left_operand = make_operator(cpplinq::details::string::trim(left));
-  op->right_operand = make_operator(cpplinq::details::string::trim(right));
+  op->type = cpplinq::detail::operators::operator_type::or_;
+  op->left_operand = make_operator(cpplinq::detail::string::trim(left));
+  op->right_operand = make_operator(cpplinq::detail::string::trim(right));
   return op;
 }
 
-}  // namespace cpplinq::details::operators
+}  // namespace cpplinq::detail::operators

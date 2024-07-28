@@ -1,10 +1,10 @@
-#include <cpplinq/details/information_schema/schema.hpp>
-#include <cpplinq/details/table_registry.hpp>
-#include <cpplinq/details/traits/table_trait.hpp>
+#include <cpplinq/detail/information_schema/schema.hpp>
+#include <cpplinq/detail/table_registry.hpp>
+#include <cpplinq/detail/traits/table_trait.hpp>
 
-using columns_index = cpplinq::details::information_schema::columns::index;
-using information_schema_columns = cpplinq::details::information_schema::columns;
-using information_schema_column = cpplinq::details::information_schema::column;
+using columns_index = cpplinq::detail::information_schema::columns::index;
+using information_schema_columns = cpplinq::detail::information_schema::columns;
+using information_schema_column = cpplinq::detail::information_schema::column;
 DECLARE_TABLE("information_schema.columns",
               information_schema_columns,
               information_schema_column,
@@ -19,9 +19,9 @@ DECLARE_TABLE("information_schema.columns",
                     (table_name, std::string))((column_name, std::string)))));
 
 using parameters_index =
-    cpplinq::details::information_schema::parameters::index;
-using information_schema_parameters = cpplinq::details::information_schema::parameters;
-using information_schema_parameter = cpplinq::details::information_schema::parameter;
+    cpplinq::detail::information_schema::parameters::index;
+using information_schema_parameters = cpplinq::detail::information_schema::parameters;
+using information_schema_parameter = cpplinq::detail::information_schema::parameter;
 DECLARE_TABLE(
     "information_schema.parameters",
     information_schema_parameters,
@@ -35,9 +35,9 @@ DECLARE_TABLE(
       ((specific_catalog, std::string))((specific_schema, std::string))(
           (specific_name, std::string))((parameter_name, std::string)))));
 
-using routines_index = cpplinq::details::information_schema::routines::index;
-using information_schema_routines = cpplinq::details::information_schema::routines;
-using information_schema_routine = cpplinq::details::information_schema::routine;
+using routines_index = cpplinq::detail::information_schema::routines::index;
+using information_schema_routines = cpplinq::detail::information_schema::routines;
+using information_schema_routine = cpplinq::detail::information_schema::routine;
 DECLARE_TABLE(
     "information_schema.routines",
     information_schema_routines,
@@ -50,9 +50,9 @@ DECLARE_TABLE(
       ((specific_catalog, std::string))((specific_schema, std::string))(
           (specific_name, std::string))((routine_name, std::string)))));
 
-using tables_index = cpplinq::details::information_schema::tables::index;
-using information_schema_tables = cpplinq::details::information_schema::tables;
-using information_schema_table = cpplinq::details::information_schema::table;
+using tables_index = cpplinq::detail::information_schema::tables::index;
+using information_schema_tables = cpplinq::detail::information_schema::tables;
+using information_schema_table = cpplinq::detail::information_schema::table;
 DECLARE_TABLE("information_schema.tables",
               information_schema_tables,
               information_schema_table,
@@ -63,7 +63,7 @@ DECLARE_TABLE("information_schema.tables",
                 ((table_catalog, std::string))((table_schema, std::string))(
                     (table_name, std::string)))));
 
-using namespace cpplinq::details::information_schema;
+using namespace cpplinq::detail::information_schema;
 
 columns::columns() {
   index::instance().table(*this);
