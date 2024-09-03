@@ -1,4 +1,5 @@
 #pragma once
+#include <cpplinq/detail/aggregates/aggregate.hpp>
 #include <cpplinq/detail/column.hpp>
 #include <cpplinq/detail/cursor.hpp>
 #include <cpplinq/detail/select_context.hpp>

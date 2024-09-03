@@ -1,8 +1,7 @@
 #pragma once
 
 
-#include <cpplinq/detail/aggregates/count.hpp>
-#include <cpplinq/detail/aggregates/sum.hpp>
+#include <cpplinq/detail/aggregates/aggregate.hpp>
 #include <cpplinq/detail/call_context.hpp>
 #include <cpplinq/detail/column.hpp>
 #include <cpplinq/detail/cpplinq_exception.hpp>
