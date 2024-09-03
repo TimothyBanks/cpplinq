@@ -1,0 +1,3 @@
+[submodule "library/boost"]
+	path = library/boost
+	url = https://github.com/boostorg/boost.git
