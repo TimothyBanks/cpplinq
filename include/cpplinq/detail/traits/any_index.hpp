@@ -1,6 +1,7 @@
 #pragma once
 #include <cpplinq/detail/aggregates/aggregate.hpp>
 #include <cpplinq/detail/column.hpp>
+#include <cpplinq/detail/cpplinq_exception.hpp>
 #include <cpplinq/detail/cursor.hpp>
 #include <cpplinq/detail/select_context.hpp>
 #include <cstddef>
@@ -43,6 +44,20 @@ cpplinq::detail::cursor execute(select_context& context) {
   auto offset = context.offset.value_or(0);
   auto limit = context.limit.value_or(std::numeric_limits<size_t>::max());
 
+  auto aggregates_ = std::vector<detail::aggregates::aggregate>{};
+  auto has_non_aggregates = false;
+  for (const auto& column : context.columns) {
+    if (column.aggregate.empty()) {
+      has_non_aggregates = true;
+      continue;
+    }
+    aggregates_.push_back(detail::aggregates::make(column.aggregate));
+  }
+
+  if (has_non_aggregates && !aggregates_.empty()) {
+    throw detail::cpplinq_exception{"SELECT can not contain both aggregated and non aggregated columns."};
+  }
+
   for (auto it = begin; it != end; ++it) {
     if (offset > 0) {
       --offset;
@@ -56,10 +71,16 @@ cpplinq::detail::cursor execute(select_context& context) {
       continue;
     }
 
-    cursor.results.emplace_back();
-    auto& row = cursor.results.back();
-    for (const auto& column : context.columns) {
-      row.emplace_back(Table_trait::column_value(column.name, value));
+    if (has_non_aggregates) {
+      cursor.results.emplace_back();
+      auto& row = cursor.results.back();
+      for (const auto& column : context.columns) {
+        row.emplace_back(Table_trait::column_value(column.name, value));
+      }
+    } else { 
+      for (const auto& column : context.columns) {
+        // colu
+      }
     }
 
     if (--limit == 0) {
