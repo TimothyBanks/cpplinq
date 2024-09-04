@@ -2,12 +2,11 @@
 
 namespace cpplinq::detail::aggregates {
 
-std::string aggregate::value() const {
-  return std::visit(overloaded{[](int64_t v) { return std::to_string(v); },
-                               [](double v) { return std::to_string(v); },
-                               [](const std::string& v) { return v; },
-                               [](std::monostate) { return std::string{}; }},
-                    accumulator_);
+std::any aggregate::value() const {
+  return std::visit(
+      overloaded{[](std::monostate) { return std::any{std::string{}}; },
+                 [](const auto& v) { return std::any{v}; }},
+      accumulator_);
 }
 
 void aggregate::initialize(const aggregate_type& input) {
@@ -15,8 +14,7 @@ void aggregate::initialize(const aggregate_type& input) {
     std::visit(
         overloaded{[&](int64_t v) { accumulator_ = static_cast<int64_t>(0); },
                    [&](double v) { accumulator_ = static_cast<double>(0); },
-                   [&](const std::string& v) { accumulator_ = std::string{}; },
-                   [&](std::monostate) { accumulator_ = std::string{}; }},
+                   [&](const auto& v) { accumulator_ = std::string{}; }},
         input);
   }
 }
@@ -40,8 +38,8 @@ void aggregate::verify_holds_alternative(const aggregate_type& input) {
       input);
 
   if (!result) {
-      throw "mismatch between accumulator and input types";
-    }
+    throw "mismatch between accumulator and input types";
+  }
 }
 
 std::unordered_map<std::string, aggregate::aggregate_functor>

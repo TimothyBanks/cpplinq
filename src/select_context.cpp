@@ -136,8 +136,7 @@ select_context make_select_context(const std::string& sql_) {
       subtokens = regex::split(column_token, '(');
       if (subtokens.size() > 1) {
         // This is an aggregate function.
-        new_column.aggregate =
-            cpplinq::detail::string::trim(subtokens.front());
+        new_column.aggregate = cpplinq::detail::string::trim(subtokens.front());
         subtokens = regex::split(subtokens.back(), ')');
         new_column.name =
             subtokens.front().empty()

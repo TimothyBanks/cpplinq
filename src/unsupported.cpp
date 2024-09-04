@@ -10,7 +10,7 @@ void check_unsupported_token(const std::string& sql, const std::string& token) {
     return;
   }
   throw cpplinq::detail::cpplinq_exception{"Token " + token +
-                                            " is unsupported"};
+                                           " is unsupported"};
 }
 
 }  // namespace cpplinq::detail

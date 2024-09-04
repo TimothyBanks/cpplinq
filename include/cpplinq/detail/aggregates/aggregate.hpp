@@ -1,4 +1,5 @@
 #pragma once
+#include <any>
 #include <functional>
 #include <string>
 #include <type_traits>
@@ -41,15 +42,21 @@ struct aggregate {
       input = static_cast<int64_t>(column_value);
     } else if constexpr (std::is_floating_point_v<T>) {
       input = static_cast<double>(column_value);
+    } else if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+      input = column_value;
     } else {
       // Assume can be converted to string.
-      input = std::to_string(column_value);
+      // input = std::to_string(column_value);
+
+      // For now, just bail out.  We can also extend this to have a library of to_string overloads
+      // to force support
+      return;
     }
 
     functor_(input, *this);
   }
 
-  std::string value() const;
+  std::any value() const;
 };
 
 bool is_aggregate(std::string aggregate_name);

@@ -181,6 +181,7 @@ BOOST_AUTO_TEST_CASE(select_context) {
   cursor = cpplinq::sql_context::execute("SELECT * FROM foobar_table");
   cursor = cpplinq::sql_context::execute(
       "SELECT indentifier, data FROM foobar_table");
+  cursor = cpplinq::sql_context::execute("SELECT COUNT(*), SUM(bar) FROM foo_table");
 }
 
 struct procedures {

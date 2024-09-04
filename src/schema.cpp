@@ -18,10 +18,11 @@ DECLARE_TABLE("information_schema.columns",
                 ((table_catalog, std::string))((table_schema, std::string))(
                     (table_name, std::string))((column_name, std::string)))));
 
-using parameters_index =
-    cpplinq::detail::information_schema::parameters::index;
-using information_schema_parameters = cpplinq::detail::information_schema::parameters;
-using information_schema_parameter = cpplinq::detail::information_schema::parameter;
+using parameters_index = cpplinq::detail::information_schema::parameters::index;
+using information_schema_parameters =
+    cpplinq::detail::information_schema::parameters;
+using information_schema_parameter =
+    cpplinq::detail::information_schema::parameter;
 DECLARE_TABLE(
     "information_schema.parameters",
     information_schema_parameters,
@@ -36,7 +37,8 @@ DECLARE_TABLE(
           (specific_name, std::string))((parameter_name, std::string)))));
 
 using routines_index = cpplinq::detail::information_schema::routines::index;
-using information_schema_routines = cpplinq::detail::information_schema::routines;
+using information_schema_routines =
+    cpplinq::detail::information_schema::routines;
 using information_schema_routine = cpplinq::detail::information_schema::routine;
 DECLARE_TABLE(
     "information_schema.routines",

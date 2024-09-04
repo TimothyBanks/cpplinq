@@ -45,17 +45,48 @@ cpplinq::detail::cursor execute(select_context& context) {
   auto limit = context.limit.value_or(std::numeric_limits<size_t>::max());
 
   auto aggregates_ = std::vector<detail::aggregates::aggregate>{};
-  auto has_non_aggregates = false;
+  auto has_non_aggregated_data = false;
   for (const auto& column : context.columns) {
     if (column.aggregate.empty()) {
-      has_non_aggregates = true;
+      has_non_aggregated_data = true;
       continue;
     }
     aggregates_.push_back(detail::aggregates::make(column.aggregate));
   }
 
-  if (has_non_aggregates && !aggregates_.empty()) {
-    throw detail::cpplinq_exception{"SELECT can not contain both aggregated and non aggregated columns."};
+  if (has_non_aggregated_data && !aggregates_.empty()) {
+    // TODO:  This is true UNTIL we support the GROUP BY clause.
+    //        But even then, the non aggregated data is limited to the columns
+    //        being grouped on.
+    throw detail::cpplinq_exception{
+        "SELECT statement can not contain both aggregated and non aggregated "
+        "columns."};
+  }
+
+  std::function<void(const typename Table_trait::record_type&)> process_row =
+      [&](const typename Table_trait::record_type& value) {
+        cursor.results.emplace_back();
+        auto& row = cursor.results.back();
+        for (const auto& column : context.columns) {
+          row.emplace_back(Table_trait::column_value(column.name, value));
+        }
+      };
+
+  if (!has_non_aggregated_data) {
+    process_row = [&](const typename Table_trait::record_type& value) {
+      for (auto i = size_t{0}; i < context.columns.size(); ++i) {
+        auto& column = context.columns[i];
+        if (column.name == "*") {
+          // In this case we just need to invoke the aggregate.  Most
+          // likely this is a COUNT aggregate.
+          aggregates_[i].accumulate(static_cast<int64_t>(0));
+        } else {
+          Table_trait::invoke(column.name, [&](const auto& column_trait) {
+            aggregates_[i].accumulate(column_trait.value(value));
+          });
+        }
+      }
+    };
   }
 
   for (auto it = begin; it != end; ++it) {
@@ -71,20 +102,20 @@ cpplinq::detail::cursor execute(select_context& context) {
       continue;
     }
 
-    if (has_non_aggregates) {
-      cursor.results.emplace_back();
-      auto& row = cursor.results.back();
-      for (const auto& column : context.columns) {
-        row.emplace_back(Table_trait::column_value(column.name, value));
-      }
-    } else { 
-      for (const auto& column : context.columns) {
-        // colu
-      }
-    }
+    process_row(value);
 
     if (--limit == 0) {
       break;
+    }
+  }
+
+  if (!has_non_aggregated_data) {
+    // Aggregated data doesn't get added to the cursor during the processing loop.  So 
+    // we need to add afterwards.
+    cursor.results.emplace_back();
+    auto& row = cursor.results.back();
+    for (const auto& aggregate : aggregates_) {
+      row.emplace_back(aggregate.value());
     }
   }
 
