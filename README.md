@@ -1,7 +1,7 @@
 # cpplinq
 Library for overlaying an SQL syntax onto cpp data structures.  This will allow for executing various SQL statements against your data structures such as SELECT, INSERT, CALL.  This library will follow a postgres flavor of SQL.
 
-The concept of this library came about as a possible way to white-box blockchain data.  While blockchains are known for transaparency, getting to meaningful data can be hard to do.  This is also coupled with people might not be familiar with toolchains, APIs, languages, etc that are used with the blockchain that is holding the data.  This is why SQL was choosen as the facade, because most people are comfortable with that toolset and language.  This also allows for future enhancements such as extending the library to mimic a DBMS and conforming to ODBC/JDBC standards, which would allow the blockchain to be integrated into your system as another SQL based data source.
+The concept of this library came about as a possible way to white-box blockchain data.  While blockchains are known for transaparency, getting to meaningful data can be hard to do.  This is also coupled with developers might not be familiar with toolchains, APIs, languages, etc that are used with the blockchain that is holding the data.  This is why SQL was choosen as the facade, because most people are comfortable with that toolset and language.  This also allows for future enhancements such as extending the library to mimic a DBMS and conforming to ODBC/JDBC standards, which would allow the blockchain to be integrated into your system as another SQL based data source.
 
 For now, it is much easier to show an example of the library to demonstrate how to use and hopefully give an understanding of how it could be used.  The are a few major concepts that this library is employing:
 1.  Duck typing.  There is an implicit interface that this library requires for integrators, but this interface can be exposed on your existing types with minimal changes.  One of the great features of CPP templates is duck typing, "if it walks like a duck and talks like a duck, it's a duck", or in our context, if the type has a method named the same as the method required by the API and matches the function signature, then it must be a type compatible with us.
@@ -723,4 +723,4 @@ BOOST_AUTO_TEST_CASE(information_schema) {
 
 ## Aggregates
 
-TBD
+SQL aggregate functions will be supported.  Currently SUM and COUNT have been added as a proof concept to work out how these are handled internally.  This library currently does not support GROUP BY clauses, so the use of aggregate functions within a SELECT statement is all or nothing (that is, you can't select non aggregate columns along with aggregated columns).  Normally this is acceptable when the column is part of the GROUP BY clause.
