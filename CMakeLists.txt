@@ -22,23 +22,18 @@ add_library(cpplinq STATIC
     src/any_index.cpp
     src/any_procedure.cpp  
     src/any_table.cpp
-    src/call_context.cpp 
-    src/column.cpp 
-    src/count.cpp
+    src/call_context.cpp
     src/delete_context.cpp 
     src/hash.cpp
     src/insert_context.cpp 
     src/operators_make.cpp
-    src/procedure.cpp 
     src/procedure_registry.cpp
     src/regex.cpp
     src/select_context.cpp 
     src/schema.cpp
     src/sql_context.cpp
     src/string.cpp
-    src/sum.cpp 
     src/table_registry.cpp
-    src/table.cpp 
     src/unsupported.cpp
     src/update_context.cpp)
 

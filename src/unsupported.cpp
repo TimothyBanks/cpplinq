@@ -5,7 +5,7 @@
 namespace cpplinq::detail {
 
 void check_unsupported_token(const std::string& sql, const std::string& token) {
-  auto tokens = regex::split(sql, " ORDER BY ");
+  auto tokens = regex::split(sql, token);
   if (tokens.size() <= 1) {
     return;
   }
