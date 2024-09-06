@@ -43,6 +43,10 @@ struct table_index {
 
   void pop(const tuple_type& key) { 
     auto it = lower_bound(key);
+    if (it == std::end(*this)) {
+      return;
+    }
+    
     auto position = it.it_->second;
 
     // This is a very naive approach
