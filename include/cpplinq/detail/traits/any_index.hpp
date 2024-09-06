@@ -60,7 +60,7 @@ cpplinq::detail::cursor execute(delete_context& context) {
       continue;
     }
     // TODO: This needs implemented on the index.
-    // it = index_.erase(it);
+    it = index_.erase(it);
     ++count;
   }
 

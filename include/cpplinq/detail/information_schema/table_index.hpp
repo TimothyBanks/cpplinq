@@ -41,7 +41,20 @@ struct table_index {
     index_.emplace(std::move(key), position);
   }
 
-  void pop(const tuple_type& key) { index_.erase(key); }
+  void pop(const tuple_type& key) { 
+    auto it = lower_bound(key);
+    auto position = it.it_->second;
+
+    // This is a very naive approach
+    for (auto it = std::begin(index_); it != std::end(index_); ++it) {
+      if (it->second <= position) {
+        continue;
+      }
+      --it->second;
+    }
+
+    index_.erase(key); 
+  }
 
   struct iterator {
     typename backing_type::iterator begin_;
@@ -140,6 +153,21 @@ struct table_index {
   const iterator upper_bound(const tuple_type& key) const {
     return iterator{*table_, std::begin(index_), std::end(index_),
                     index_.upper_bound(key)};
+  }
+
+  iterator erase(iterator& it) {
+    // Get the next entry
+    if (it == std::end(*this)) {
+      return std::end(*this);
+    }
+
+    ++it;
+    auto key = it.it_->first;
+    --it;
+
+    table_->pop(it.it_->second);
+
+    return lower_bound(key);
   }
 };
 
