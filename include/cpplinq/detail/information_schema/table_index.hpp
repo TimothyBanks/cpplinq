@@ -162,11 +162,17 @@ struct table_index {
     }
 
     ++it;
-    auto key = it.it_->first;
+    auto key = tuple_type{};
+    if (it != std::end(*this)) {
+      key = it.it_->first;
+    }
     --it;
 
     table_->pop(it.it_->second);
 
+    if (key == tuple_type{}) {
+      return end();
+    }
     return lower_bound(key);
   }
 };
