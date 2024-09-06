@@ -1,6 +1,8 @@
 #pragma once
 #include <cpplinq/detail/column.hpp>
+#include <cpplinq/detail/cpplinq_exception.hpp>
 #include <cpplinq/detail/cursor.hpp>
+#include <cpplinq/detail/delete_context.hpp>
 #include <cpplinq/detail/select_context.hpp>
 #include <cstddef>
 #include <memory>
@@ -15,6 +17,7 @@ struct any_table {
     virtual const std::string& name() = 0;
     virtual const std::vector<std::string>& columns() = 0;
     virtual cpplinq::detail::cursor execute(select_context& context) const = 0;
+    virtual cpplinq::detail::cursor execute(delete_context& context) const = 0;
   };
 
   template <typename Table_trait>
@@ -27,14 +30,24 @@ struct any_table {
       return table_trait::columns();
     }
 
-    virtual cpplinq::detail::cursor execute(
-        select_context& context) const override {
+    template <typename Context>
+    cpplinq::detail::cursor execute(Context& context, std::nullptr_t) const {
       auto index_name = std::string{};
       if (context.range) {
         index_name = context.range->index_name;
       }
       auto index = table_trait::index_for(index_name);
       return index.execute(context);
+    }
+
+    virtual cpplinq::detail::cursor execute(
+        select_context& context) const override {
+      return execute(context, nullptr);
+    }
+
+    virtual cpplinq::detail::cursor execute(
+        delete_context& context) const override {
+      return execute(context, nullptr);
     }
   };
 
@@ -54,7 +67,13 @@ struct any_table {
   const std::string& name() const;
   const std::vector<std::string>& columns() const;
 
-  cpplinq::detail::cursor execute(select_context& context) const;
+  template <typename Context>
+  cpplinq::detail::cursor execute(Context& context) const {
+    if (!ptr) {
+      throw cpplinq::detail::cpplinq_exception{"Invalid table state"};
+    }
+    return ptr->execute(context);
+  }
 };
 
 }  // namespace cpplinq::detail::traits

@@ -2,17 +2,12 @@
 #include <cpplinq/detail/column.hpp>
 #include <cpplinq/detail/cursor.hpp>
 #include <cpplinq/detail/operators/expression_tree.hpp>
+#include <cpplinq/detail/range_info.hpp>
 #include <optional>
 
 namespace cpplinq::detail {
 
 struct select_context {
-  struct range_info {
-    std::string index_name;
-    std::optional<std::vector<std::string>> lower_bound;
-    std::optional<std::vector<std::string>> upper_bound;
-  };
-
   std::vector<column> columns;
   std::string table_name;
   std::string table_alias;

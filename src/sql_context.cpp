@@ -19,7 +19,9 @@ cpplinq::detail::cursor execute(const std::string& sql) {
 
   if (detail::is_delete_statement(sql)) {
     auto context = detail::make_delete_context(sql);
-    return {};
+    auto& table =
+        cpplinq::detail::table_registry::instance().find(context.table_name);
+    return table.execute(context);
   }
   if (detail::is_insert_statement(sql)) {
     auto context = detail::make_insert_context(sql);

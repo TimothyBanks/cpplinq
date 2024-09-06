@@ -32,6 +32,7 @@
 #include <cpplinq/detail/operators/or.hpp>
 #include <cpplinq/detail/procedure.hpp>
 #include <cpplinq/detail/procedure_registry.hpp>
+#include <cpplinq/detail/range_info.hpp>
 #include <cpplinq/detail/regex.hpp>
 #include <cpplinq/detail/select_context.hpp>
 #include <cpplinq/detail/string.hpp>

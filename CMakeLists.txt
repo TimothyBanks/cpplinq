@@ -28,6 +28,7 @@ add_library(cpplinq STATIC
     src/insert_context.cpp 
     src/operators_make.cpp
     src/procedure_registry.cpp
+    src/range_info.cpp
     src/regex.cpp
     src/select_context.cpp 
     src/schema.cpp

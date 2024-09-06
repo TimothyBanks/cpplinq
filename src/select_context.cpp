@@ -14,17 +14,20 @@ bool is_select_statement(const std::string& sql) {
 }
 
 select_context make_select_context(const std::string& sql_) {
+  // clang-format off
   /***************************
-  General format of a SELECT statement in PostgreSQL:
   SELECT DISTINCT column1, column2, ...
   FROM table_name
   JOIN other_table ON table_name.column = other_table.column
   WHERE condition
-  RANGE index_name LOWER_BOUND [column1 value, column2 value, ...] UPPER_BOUND
-  [column1 value, column2 value, ...]) GROUP BY column1, column2, ... HAVING
-  condition ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ... LIMIT number
+  RANGE index_name LOWER_BOUND [column1 value, column2 value, ...] UPPER_BOUND [column1 value, column2 value, ...]
+  GROUP BY column1, column2, ... 
+  HAVING condition 
+  ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ... 
+  LIMIT number
   OFFSET number;
   ****************************/
+  // clang-format off
 
   auto context = select_context{};
 
@@ -54,33 +57,7 @@ select_context make_select_context(const std::string& sql_) {
 
   tokens = regex::split(tokens.front(), " RANGE ");
   if (tokens.size() > 1) {
-    auto range = select_context::range_info{};
-
-    auto extract = [](auto& s) {
-      auto trimmed = cpplinq::detail::string::trim(s);
-      trimmed.pop_back();
-      trimmed = trimmed.substr(1);
-      auto tokens = regex::tokenize(trimmed, ',');
-      for (auto& c : tokens) {
-        c = cpplinq::detail::string::trim(c);
-      }
-      return tokens;
-    };
-
-    auto subtokens = regex::split(tokens.back(), " UPPER_BOUND ");
-    if (subtokens.size() > 1) {
-      // There is an upper bound clause.
-      range.upper_bound = extract(subtokens.back());
-    }
-
-    subtokens = regex::split(subtokens.front(), " LOWER_BOUND ");
-    if (subtokens.size() > 1) {
-      // There is a lower bound clause.
-      range.lower_bound = extract(subtokens.back());
-    }
-
-    range.index_name = cpplinq::detail::string::trim(subtokens.front());
-    context.range = std::move(range);
+    context.range = make_range_info(tokens.back());
   }
 
   tokens = regex::split(tokens.front(), " WHERE ");

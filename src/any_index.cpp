@@ -16,11 +16,4 @@ const std::vector<std::string>& any_index::columns() const {
   }
   return ptr->columns();
 }
-
-cpplinq::detail::cursor any_index::execute(select_context& context) const {
-  if (!ptr) {
-    throw cpplinq::detail::cpplinq_exception{"Invalid table state"};
-  }
-  return ptr->execute(context);
-}
 }  // namespace cpplinq::detail::traits

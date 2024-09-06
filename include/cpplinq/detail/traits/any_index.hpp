@@ -3,6 +3,7 @@
 #include <cpplinq/detail/column.hpp>
 #include <cpplinq/detail/cpplinq_exception.hpp>
 #include <cpplinq/detail/cursor.hpp>
+#include <cpplinq/detail/delete_context.hpp>
 #include <cpplinq/detail/select_context.hpp>
 #include <cstddef>
 #include <limits>
@@ -11,14 +12,14 @@
 
 namespace cpplinq::detail::traits {
 
-template <typename Table_trait, typename Index_trait>
-cpplinq::detail::cursor execute(select_context& context) {
-  auto lower_bound = std::optional<typename Index_trait::tuple_type>{};
-  auto upper_bound = std::optional<typename Index_trait::tuple_type>{};
+template <typename Index_trait, typename Context>
+std::pair<typename Index_trait::iterator_type,
+          typename Index_trait::iterator_type>
+index_range(Context& context) {
   auto begin = typename Index_trait::iterator_type{};
   auto end = typename Index_trait::iterator_type{};
-
   auto& index_ = Index_trait::index_type::instance();
+
   if (!context.range ||
       (!context.range->lower_bound && !context.range->upper_bound)) {
     begin = std::begin(index_);
@@ -37,6 +38,40 @@ cpplinq::detail::cursor execute(select_context& context) {
     end =
         index_.lower_bound(Index_trait::to_tuple(*context.range->upper_bound));
   }
+
+  return std::make_pair(std::move(begin), std::move(end));
+}
+
+template <typename Table_trait, typename Index_trait>
+cpplinq::detail::cursor execute(delete_context& context) {
+  auto [begin, end] = index_range<Index_trait>(context);
+
+  auto cursor = cpplinq::detail::cursor{};
+  cursor.columns = {column{.name = "rows affected"}};
+
+  auto& index_ = Index_trait::index_type::instance();
+  auto count = size_t{0};
+  for (auto it = begin; it != end;) {
+    auto& value = *it;
+
+    // TODO:  Aliases for columns need to be factored in during evaluation.
+    if (!Table_trait::evaluate(value, context.et)) {
+      ++it;
+      continue;
+    }
+    // TODO: This needs implemented on the index.
+    // it = index_.erase(it);
+    ++count;
+  }
+
+  cursor.results.emplace_back();
+  cursor.results.back().emplace_back(count);
+  return cursor;
+}
+
+template <typename Table_trait, typename Index_trait>
+cpplinq::detail::cursor execute(select_context& context) {
+  auto [begin, end] = index_range<Index_trait>(context);
 
   auto cursor = cpplinq::detail::cursor{};
   cursor.columns = context.columns;
@@ -110,8 +145,8 @@ cpplinq::detail::cursor execute(select_context& context) {
   }
 
   if (!has_non_aggregated_data) {
-    // Aggregated data doesn't get added to the cursor during the processing loop.  So 
-    // we need to add afterwards.
+    // Aggregated data doesn't get added to the cursor during the processing
+    // loop.  So we need to add afterwards.
     cursor.results.emplace_back();
     auto& row = cursor.results.back();
     for (const auto& aggregate : aggregates_) {
@@ -129,6 +164,7 @@ struct any_index {
     virtual const std::string& name() = 0;
     virtual const std::vector<std::string>& columns() = 0;
     virtual cpplinq::detail::cursor execute(select_context& context) const = 0;
+    virtual cpplinq::detail::cursor execute(delete_context& context) const = 0;
   };
 
   template <typename Table_trait, typename Index_trait>
@@ -144,6 +180,12 @@ struct any_index {
 
     virtual cpplinq::detail::cursor execute(
         select_context& context) const override {
+      return cpplinq::detail::traits::execute<table_trait, index_trait>(
+          context);
+    }
+
+    virtual cpplinq::detail::cursor execute(
+        delete_context& context) const override {
       return cpplinq::detail::traits::execute<table_trait, index_trait>(
           context);
     }
@@ -166,7 +208,13 @@ struct any_index {
   const std::string& name() const;
   const std::vector<std::string>& columns() const;
 
-  cpplinq::detail::cursor execute(select_context& context) const;
+  template <typename Context>
+  cpplinq::detail::cursor execute(Context& context) const {
+    if (!ptr) {
+      throw cpplinq::detail::cpplinq_exception{"Invalid table state"};
+    }
+    return ptr->execute(context);
+  }
 };
 
 }  // namespace cpplinq::detail::traits
