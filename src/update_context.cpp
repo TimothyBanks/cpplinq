@@ -47,7 +47,7 @@ update_context make_update_context(const std::string& sql_) {
 
   tokens = regex::split(tokens.front(), " SET ");
   if (tokens.size() > 1) {
-    auto subtokens = regex::split(tokens.back(), ',');
+    auto subtokens = regex::tokenize(tokens.back(), ',');
     for (auto& token : subtokens) {
       auto parts = regex::split(token, '=');
       if (parts.size() != 2) {

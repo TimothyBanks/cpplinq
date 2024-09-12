@@ -185,6 +185,12 @@ BOOST_AUTO_TEST_CASE(select_context) {
 
   cursor = cpplinq::sql_context::execute("DELETE FROM foo_table WHERE id = 55;");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 55");
+
+  cursor = cpplinq::sql_context::execute("UPDATE foo_table SET foo = 'Update!!!', bar = 123456 WHERE id = 54;");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 54;");
+
+  cursor = cpplinq::sql_context::execute("INSERT INTO foo_table (id, foo, bar) VALUES (55, '55', 55);");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 55");
 }
 
 struct procedures {
