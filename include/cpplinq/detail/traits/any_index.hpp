@@ -58,7 +58,7 @@ void for_each(Context& context, Functor f) {
       continue;
     }
 
-    if (f(value)) {
+    if (f(value, it)) {
       return;
     }
   }
@@ -76,7 +76,7 @@ template <typename Table_trait, typename Index_trait>
 cpplinq::detail::cursor execute(update_context& context) {
   auto count = size_t{0};
 
-  for_each<Table_trait, Index_trait>(context, [&](auto& value) {
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter) {
     for (const auto& column : context.values) {
       Table_trait::invoke(column.name,
                           [&](auto& ct) { ct.set_value(value, column.value); });
@@ -94,17 +94,12 @@ cpplinq::detail::cursor execute(delete_context& context) {
   auto& index_ = Index_trait::index_type::instance();
   auto count = size_t{0};
 
-  // Because of the nature of the delete affecting the iterator,
-  // we can't use the for_each template above.
-  for (auto it = begin; it != end;) {
-    auto& value = *it;
-    if (!Table_trait::evaluate(value, context.et)) {
-      ++it;
-      continue;
-    }
-    it = index_.erase(it);
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter){
+    iter = index_.erase(iter);
+    --iter; // Move it back because the loop embedded in for_each is managing the iterator
     ++count;
-  }
+    return false;
+  });
 
   return make_cursor(count);
 }
@@ -162,7 +157,7 @@ cpplinq::detail::cursor execute(select_context& context) {
     };
   }
 
-  for_each<Table_trait, Index_trait>(context, [&](auto& value) {
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter) {
     if (offset > 0) {
       --offset;
       return true;
