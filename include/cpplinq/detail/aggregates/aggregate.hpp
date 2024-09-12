@@ -18,8 +18,7 @@ overloaded(Ts...) -> overloaded<Ts...>;
 struct aggregate {
   using aggregate_type =
       std::variant<std::monostate, int64_t, double, std::string>;
-  using aggregate_functor =
-      std::function<void(aggregate_type&, aggregate&)>;
+  using aggregate_functor = std::function<void(aggregate_type&, aggregate&)>;
 
   static std::unordered_map<std::string, aggregate_functor> aggregrates;
 
@@ -48,8 +47,8 @@ struct aggregate {
       // Assume can be converted to string.
       // input = std::to_string(column_value);
 
-      // For now, just bail out.  We can also extend this to have a library of to_string overloads
-      // to force support
+      // For now, just bail out.  We can also extend this to have a library of
+      // to_string overloads to force support
       return;
     }
 
@@ -62,4 +61,4 @@ struct aggregate {
 bool is_aggregate(std::string aggregate_name);
 aggregate make(std::string aggregate_name);
 
-}  // namespace cppling::detail::aggregrates
+}  // namespace cpplinq::detail::aggregates

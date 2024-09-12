@@ -6,8 +6,8 @@
 namespace cpplinq::detail {
 
 struct call_context {
-    std::string name;
-    std::vector<std::pair<std::string, std::string>>arguments;
+  std::string name;
+  std::vector<std::pair<std::string, std::string>> arguments;
 };
 
 bool is_call_statement(const std::string& sql);

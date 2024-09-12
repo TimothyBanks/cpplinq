@@ -281,8 +281,7 @@ std::unordered_set<cpplinq::detail::operators::comparison_result> evaluate(
   if (left < right) {
     result.emplace(cpplinq::detail::operators::comparison_result::less_than);
   } else if (left > right) {
-    result.emplace(
-        cpplinq::detail::operators::comparison_result::greater_than);
+    result.emplace(cpplinq::detail::operators::comparison_result::greater_than);
   }
   if (left == right) {
     result.emplace(cpplinq::detail::operators::comparison_result::equal);

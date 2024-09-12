@@ -15,7 +15,9 @@ struct cpplinq_exception : public std::exception {
   cpplinq_exception& operator=(const cpplinq_exception&) = default;
   cpplinq_exception& operator=(cpplinq_exception&&) = default;
 
-  virtual const char* what() const noexcept override { return what_string.c_str(); }
+  virtual const char* what() const noexcept override {
+    return what_string.c_str();
+  }
 };
 
 }  // namespace cpplinq::detail

@@ -76,7 +76,7 @@ columns& columns::instance() {
   return instance_;
 }
 
-void columns::push(record_type record) {
+void columns::push_back(record_type record) {
   records_.emplace_back();
   index::instance().push(
       std::make_tuple(record.table_catalog, record.table_schema,
@@ -85,7 +85,7 @@ void columns::push(record_type record) {
   records_.back() = std::move(record);
 }
 
-void columns::pop(size_t index) {
+void columns::erase(size_t index) {
   if (index >= records_.size()) {
     return;
   }
@@ -112,7 +112,7 @@ parameters& parameters::instance() {
   return instance_;
 }
 
-void parameters::push(record_type record) {
+void parameters::push_back(record_type record) {
   records_.emplace_back();
   index::instance().push(
       std::make_tuple(record.specific_catalog, record.specific_schema,
@@ -121,7 +121,7 @@ void parameters::push(record_type record) {
   records_.back() = std::move(record);
 }
 
-void parameters::pop(size_t index) {
+void parameters::erase(size_t index) {
   if (index >= records_.size()) {
     return;
   }
@@ -148,7 +148,7 @@ routines& routines::instance() {
   return instance_;
 }
 
-void routines::push(record_type record) {
+void routines::push_back(record_type record) {
   records_.emplace_back();
   index::instance().push(
       std::make_tuple(record.specific_catalog, record.specific_schema,
@@ -157,7 +157,7 @@ void routines::push(record_type record) {
   records_.back() = std::move(record);
 }
 
-void routines::pop(size_t index) {
+void routines::erase(size_t index) {
   if (index >= records_.size()) {
     return;
   }
@@ -184,7 +184,7 @@ tables& tables::instance() {
   return instance_;
 }
 
-void tables::push(record_type record) {
+void tables::push_back(record_type record) {
   records_.emplace_back();
   index::instance().push(
       std::make_tuple(record.table_catalog, record.table_schema,
@@ -193,7 +193,7 @@ void tables::push(record_type record) {
   records_.back() = std::move(record);
 }
 
-void tables::pop(size_t index) {
+void tables::erase(size_t index) {
   if (index >= records_.size()) {
     return;
   }

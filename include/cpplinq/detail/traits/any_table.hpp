@@ -1,11 +1,6 @@
 #pragma once
-#include <cpplinq/detail/column.hpp>
-#include <cpplinq/detail/cpplinq_exception.hpp>
-#include <cpplinq/detail/cursor.hpp>
-#include <cpplinq/detail/delete_context.hpp>
 #include <cpplinq/detail/insert_context.hpp>
-#include <cpplinq/detail/select_context.hpp>
-#include <cpplinq/detail/update_context.hpp>
+#include <cpplinq/detail/traits/any_index.hpp>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -61,8 +56,16 @@ struct any_table {
 
     virtual cpplinq::detail::cursor execute(
         insert_context& context) const override {
-      // TODO:  Insert is done on the table not on an index.
-      return {};
+      for (const auto& value : context.values) {
+        auto record = typename table_trait::record_type{};
+        for (auto i = size_t{0}; i < value.size(); ++i) {
+          table_trait::invoke(context.columns[i].name, [&](auto& ct) {
+            ct.set_value(record, value[i]);
+          });
+        }
+        table_trait::table_type::instance().push_back(std::move(record));
+      }
+      return make_cursor(context.values.size());
     }
   };
 

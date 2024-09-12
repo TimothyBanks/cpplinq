@@ -54,7 +54,7 @@
             .data_type =                                                       \
                 BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 1, __column_tuple__)), \
             };                                                                 \
-    cpplinq::detail::information_schema::columns::instance().push(             \
+    cpplinq::detail::information_schema::columns::instance().push_back(        \
         std::move(column_def));                                                \
     return true;                                                               \
   }();
