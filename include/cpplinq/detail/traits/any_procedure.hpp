@@ -10,8 +10,7 @@ struct any_procedure {
  private:
   struct procedure_base {
     virtual const std::string& name() = 0;
-    virtual cpplinq::detail::cursor invoke(
-        const procedure_arguments& args) = 0;
+    virtual cpplinq::detail::cursor invoke(const procedure_arguments& args) = 0;
   };
 
   template <typename Procedure_trait>

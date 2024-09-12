@@ -51,14 +51,14 @@ struct foo_table {
     return instance_;
   }
 
-  void push(record_type record) {
+  void push_back(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
     primary_index_type::instance().push(std::make_tuple(record.id),
                                         records_.size() - 1);
   }
 
-  void pop(size_t index) {
+  void erase(size_t index) {
     if (index >= records_.size()) {
       return;
     }
@@ -100,14 +100,14 @@ struct foobar_table {
     return instance_;
   }
 
-  void push(record_type record) {
+  void push_back(record_type record) {
     records_.emplace_back();
     records_.back() = std::move(record);
     primary_index_type::instance().push(std::make_tuple(record.identifier),
                                         records_.size() - 1);
   }
 
-  void pop(size_t index) {
+  void erase(size_t index) {
     if (index >= records_.size()) {
       return;
     }
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(select_context) {
   auto& ft = foo_table::instance();
 
   for (auto i = size_t{0}; i < 100; ++i) {
-    ft.push(
+    ft.push_back(
         {.id = i,
          .foo = std::to_string(i),
          .bar = static_cast<float>(i),
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(select_context) {
   auto& fbt = foobar_table::instance();
 
   for (auto i = size_t{1000}; i < 1100; ++i) {
-    fbt.push(
+    fbt.push_back(
         {.identifier = i,
          .data = std::to_string(i) + std::to_string(i) + std::to_string(i)});
   }
@@ -183,7 +183,13 @@ BOOST_AUTO_TEST_CASE(select_context) {
       "SELECT indentifier, data FROM foobar_table");
   cursor = cpplinq::sql_context::execute("SELECT COUNT(*), SUM(bar) FROM foo_table");
 
-  cursor = cpplinq::sql_context::execute("DELETE FROM foo_table WHERE id = 55;");
+  cursor = cpplinq::sql_context::execute("DELETE FROM foo_table WHERE id = 55 OR id = 56 OR id = 88;");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 55 OR id = 56 OR id = 88");
+
+  cursor = cpplinq::sql_context::execute("UPDATE foo_table SET foo = 'Update!!!', bar = 123456 WHERE id = 54;");
+  cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 54;");
+
+  cursor = cpplinq::sql_context::execute("INSERT INTO foo_table (id, foo, bar) VALUES (55, '55', 55);");
   cursor = cpplinq::sql_context::execute("SELECT * FROM foo_table WHERE id = 55");
 }
 

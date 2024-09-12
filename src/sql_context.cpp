@@ -17,25 +17,23 @@ cpplinq::detail::cursor execute(const std::string& sql) {
     return procedure.invoke(context.arguments);
   }
 
-  if (detail::is_delete_statement(sql)) {
-    auto context = detail::make_delete_context(sql);
+  auto table_execute = [](auto&& context) {
     auto& table =
         cpplinq::detail::table_registry::instance().find(context.table_name);
     return table.execute(context);
+  };
+
+  if (detail::is_delete_statement(sql)) {
+    return table_execute(detail::make_delete_context(sql));
   }
   if (detail::is_insert_statement(sql)) {
-    auto context = detail::make_insert_context(sql);
-    return {};
+    return table_execute(detail::make_insert_context(sql));
   }
   if (detail::is_select_statement(sql)) {
-    auto context = detail::make_select_context(sql);
-    auto& table =
-        cpplinq::detail::table_registry::instance().find(context.table_name);
-    return table.execute(context);
+    return table_execute(detail::make_select_context(sql));
   }
   if (detail::is_update_statement(sql)) {
-    auto context = detail::make_update_context(sql);
-    return {};
+    return table_execute(detail::make_update_context(sql));
   }
   return {};
 }

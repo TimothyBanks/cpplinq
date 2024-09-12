@@ -73,8 +73,8 @@ struct columns {
   columns& operator=(columns&&) = default;
 
   static columns& instance();
-  void push(record_type record);
-  void pop(size_t index);
+  void push_back(record_type record);
+  void erase(size_t index);
   backing_store& data();
   const backing_store& data() const;
 };
@@ -104,8 +104,8 @@ struct parameters {
   parameters& operator=(parameters&&) = default;
 
   static parameters& instance();
-  void push(record_type record);
-  void pop(size_t index);
+  void push_back(record_type record);
+  void erase(size_t index);
   backing_store& data();
   const backing_store& data() const;
 };
@@ -132,8 +132,8 @@ struct routines {
   routines& operator=(routines&&) = default;
 
   static routines& instance();
-  void push(record_type record);
-  void pop(size_t index);
+  void push_back(record_type record);
+  void erase(size_t index);
   backing_store& data();
   const backing_store& data() const;
 };
@@ -155,8 +155,8 @@ struct tables {
   tables& operator=(tables&&) = default;
 
   static tables& instance();
-  void push(record_type record);
-  void pop(size_t index);
+  void push_back(record_type record);
+  void erase(size_t index);
   backing_store& data();
   const backing_store& data() const;
 };

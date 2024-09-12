@@ -41,12 +41,12 @@ struct table_index {
     index_.emplace(std::move(key), position);
   }
 
-  void pop(const tuple_type& key) { 
+  void pop(const tuple_type& key) {
     auto it = lower_bound(key);
     if (it == std::end(*this)) {
       return;
     }
-    
+
     auto position = it.it_->second;
 
     // This is a very naive approach
@@ -57,7 +57,7 @@ struct table_index {
       --it->second;
     }
 
-    index_.erase(key); 
+    index_.erase(key);
   }
 
   struct iterator {
@@ -172,7 +172,7 @@ struct table_index {
     }
     --it;
 
-    table_->pop(it.it_->second);
+    table_->erase(it.it_->second);
 
     if (key == tuple_type{}) {
       return end();

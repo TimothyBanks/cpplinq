@@ -17,21 +17,21 @@
   {BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__),                   \
    {BOOST_PP_TUPLE_ELEM(2, 0, __user_defined_tuple__){},         \
     index_trait<BOOST_PP_TUPLE_ELEM(3, 1, __index_tuple__),      \
-                cpplinq::detail::traits::hash(                  \
+                cpplinq::detail::traits::hash(                   \
                     BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__)), \
                 BOOST_PP_TUPLE_ELEM(2, 0, __user_defined_tuple__)::hash>{}}},
 
 #define DECLARE_INDEX(__ignored__, __user_defined_tuple__, __index_tuple__) \
   template <>                                                               \
   struct index_trait<BOOST_PP_TUPLE_ELEM(3, 1, __index_tuple__),            \
-                     cpplinq::detail::traits::hash(                        \
+                     cpplinq::detail::traits::hash(                         \
                          BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__)),       \
                      BOOST_PP_TUPLE_ELEM(2, 0,                              \
                                          __user_defined_tuple__)::hash> {   \
     using index_type = BOOST_PP_TUPLE_ELEM(3, 1, __index_tuple__);          \
     using iterator_type = typename index_type::iterator;                    \
     using tuple_type = typename index_type::tuple_type;                     \
-    static constexpr auto hash = cpplinq::detail::traits::hash(            \
+    static constexpr auto hash = cpplinq::detail::traits::hash(             \
         BOOST_PP_TUPLE_ELEM(3, 0, __index_tuple__));                        \
     using table_trait = BOOST_PP_TUPLE_ELEM(2, 0, __user_defined_tuple__);  \
                                                                             \
@@ -55,7 +55,7 @@
     }                                                                       \
     static tuple_type to_tuple(const std::vector<std::string>& v) {         \
       if (v.size() != std::tuple_size<tuple_type>()) {                      \
-        throw cpplinq::detail::cpplinq_exception(                          \
+        throw cpplinq::detail::cpplinq_exception(                           \
             "Input not the same size as tuple type.");                      \
       }                                                                     \
       auto t = tuple_type{};                                                \

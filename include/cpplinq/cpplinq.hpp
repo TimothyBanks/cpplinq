@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <cpplinq/detail/aggregates/aggregate.hpp>
 #include <cpplinq/detail/call_context.hpp>
 #include <cpplinq/detail/column.hpp>
@@ -16,8 +15,8 @@
 #include <cpplinq/detail/operators/equal_to.hpp>
 #include <cpplinq/detail/operators/evaluate.hpp>
 #include <cpplinq/detail/operators/expression_tree.hpp>
-#include <cpplinq/detail/operators/greater_than_equal.hpp>
 #include <cpplinq/detail/operators/greater_than.hpp>
+#include <cpplinq/detail/operators/greater_than_equal.hpp>
 #include <cpplinq/detail/operators/group.hpp>
 #include <cpplinq/detail/operators/ilike.hpp>
 #include <cpplinq/detail/operators/in.hpp>
@@ -26,8 +25,8 @@
 #include <cpplinq/detail/operators/like.hpp>
 #include <cpplinq/detail/operators/logical_operator.hpp>
 #include <cpplinq/detail/operators/make.hpp>
-#include <cpplinq/detail/operators/not_equal.hpp>
 #include <cpplinq/detail/operators/not.hpp>
+#include <cpplinq/detail/operators/not_equal.hpp>
 #include <cpplinq/detail/operators/operator_base.hpp>
 #include <cpplinq/detail/operators/or.hpp>
 #include <cpplinq/detail/procedure.hpp>
@@ -36,8 +35,8 @@
 #include <cpplinq/detail/regex.hpp>
 #include <cpplinq/detail/select_context.hpp>
 #include <cpplinq/detail/string.hpp>
-#include <cpplinq/detail/table_registry.hpp>
 #include <cpplinq/detail/table.hpp>
+#include <cpplinq/detail/table_registry.hpp>
 #include <cpplinq/detail/traits/any_procedure.hpp>
 #include <cpplinq/detail/traits/any_table.hpp>
 #include <cpplinq/detail/traits/column_trait.hpp>

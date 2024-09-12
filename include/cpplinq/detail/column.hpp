@@ -9,6 +9,7 @@ struct column {
   std::string table;
   std::string aggregate;
   std::string type;
+  std::string value;
 };
 
 }  // namespace cpplinq::detail

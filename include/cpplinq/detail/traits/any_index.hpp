@@ -5,6 +5,7 @@
 #include <cpplinq/detail/cursor.hpp>
 #include <cpplinq/detail/delete_context.hpp>
 #include <cpplinq/detail/select_context.hpp>
+#include <cpplinq/detail/update_context.hpp>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -42,37 +43,69 @@ index_range(Context& context) {
   return std::make_pair(std::move(begin), std::move(end));
 }
 
-template <typename Table_trait, typename Index_trait>
-cpplinq::detail::cursor execute(delete_context& context) {
+template <typename Table_trait,
+          typename Index_trait,
+          typename Context,
+          typename Functor>
+void for_each(Context& context, Functor f) {
   auto [begin, end] = index_range<Index_trait>(context);
-
-  auto cursor = cpplinq::detail::cursor{};
-  cursor.columns = {column{.name = "rows affected"}};
-
   auto& index_ = Index_trait::index_type::instance();
-  auto count = size_t{0};
-  for (auto it = begin; it != end;) {
+  for (auto it = begin; it != end; ++it) {
     auto& value = *it;
 
     // TODO:  Aliases for columns need to be factored in during evaluation.
     if (!Table_trait::evaluate(value, context.et)) {
-      ++it;
       continue;
     }
-    // TODO: This needs implemented on the index.
-    it = index_.erase(it);
-    ++count;
-  }
 
+    if (f(value, it)) {
+      return;
+    }
+  }
+}
+
+inline cpplinq::detail::cursor make_cursor(size_t rows_affected) {
+  auto cursor = cpplinq::detail::cursor{};
+  cursor.columns = {column{.name = "rows affected"}};
   cursor.results.emplace_back();
-  cursor.results.back().emplace_back(count);
+  cursor.results.back().emplace_back(rows_affected);
   return cursor;
 }
 
 template <typename Table_trait, typename Index_trait>
-cpplinq::detail::cursor execute(select_context& context) {
-  auto [begin, end] = index_range<Index_trait>(context);
+cpplinq::detail::cursor execute(update_context& context) {
+  auto count = size_t{0};
 
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter) {
+    for (const auto& column : context.values) {
+      Table_trait::invoke(column.name,
+                          [&](auto& ct) { ct.set_value(value, column.value); });
+    }
+    ++count;
+    return false;
+  });
+
+  return make_cursor(count);
+}
+
+template <typename Table_trait, typename Index_trait>
+cpplinq::detail::cursor execute(delete_context& context) {
+  auto [begin, end] = index_range<Index_trait>(context);
+  auto& index_ = Index_trait::index_type::instance();
+  auto count = size_t{0};
+
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter){
+    iter = index_.erase(iter);
+    --iter; // Move it back because the loop embedded in for_each is managing the iterator
+    ++count;
+    return false;
+  });
+
+  return make_cursor(count);
+}
+
+template <typename Table_trait, typename Index_trait>
+cpplinq::detail::cursor execute(select_context& context) {
   auto cursor = cpplinq::detail::cursor{};
   cursor.columns = context.columns;
 
@@ -124,25 +157,20 @@ cpplinq::detail::cursor execute(select_context& context) {
     };
   }
 
-  for (auto it = begin; it != end; ++it) {
+  for_each<Table_trait, Index_trait>(context, [&](auto& value, auto& iter) {
     if (offset > 0) {
       --offset;
-      continue;
-    }
-
-    auto& value = *it;
-
-    // TODO:  Aliases for columns need to be factored in during evaluation.
-    if (!Table_trait::evaluate(value, context.et)) {
-      continue;
+      return true;
     }
 
     process_row(value);
 
     if (--limit == 0) {
-      break;
+      return true;
     }
-  }
+
+    return false;
+  });
 
   if (!has_non_aggregated_data) {
     // Aggregated data doesn't get added to the cursor during the processing
@@ -165,6 +193,7 @@ struct any_index {
     virtual const std::vector<std::string>& columns() = 0;
     virtual cpplinq::detail::cursor execute(select_context& context) const = 0;
     virtual cpplinq::detail::cursor execute(delete_context& context) const = 0;
+    virtual cpplinq::detail::cursor execute(update_context& context) const = 0;
   };
 
   template <typename Table_trait, typename Index_trait>
@@ -186,6 +215,12 @@ struct any_index {
 
     virtual cpplinq::detail::cursor execute(
         delete_context& context) const override {
+      return cpplinq::detail::traits::execute<table_trait, index_trait>(
+          context);
+    }
+
+    virtual cpplinq::detail::cursor execute(
+        update_context& context) const override {
       return cpplinq::detail::traits::execute<table_trait, index_trait>(
           context);
     }

@@ -98,31 +98,31 @@
 
 #define GENERATE_INVOKE_BLOCK(__ignored__, __table_name__, __column_tuple__) \
   if (column_name ==                                                         \
-      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))) {     \
-    auto trait_instance = column_trait<cpplinq::detail::traits::hash(       \
-        BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))),    \
-        cpplinq::detail::traits::hash(__table_name__)>{};                   \
+      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))) {       \
+    auto trait_instance = column_trait<cpplinq::detail::traits::hash(        \
+        BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, __column_tuple__))),      \
+        cpplinq::detail::traits::hash(__table_name__)>{};                    \
     f(trait_instance);                                                       \
     return;                                                                  \
   }
 
 #define DECLARE_TABLE(__table_name__, __table_type__, __record_type__,         \
                       __columns__, __indices__)                                \
-  namespace cpplinq::detail::traits {                                         \
+  namespace cpplinq::detail::traits {                                          \
   BOOST_PP_SEQ_FOR_EACH_I(DECLARE_COLUMN,                                      \
                           (__table_name__, __table_type__, __record_type__),   \
                           __columns__)                                         \
   template <>                                                                  \
   struct table_trait<__table_type__,                                           \
                      __record_type__,                                          \
-                     cpplinq::detail::traits::hash(__table_name__)> {         \
+                     cpplinq::detail::traits::hash(__table_name__)> {          \
     static constexpr auto hash =                                               \
-        cpplinq::detail::traits::hash(__table_name__);                        \
+        cpplinq::detail::traits::hash(__table_name__);                         \
     using table_type = __table_type__;                                         \
     using record_type = __record_type__;                                       \
     using type = table_trait<__table_type__,                                   \
                              __record_type__,                                  \
-                             cpplinq::detail::traits::hash(__table_name__)>;  \
+                             cpplinq::detail::traits::hash(__table_name__)>;   \
                                                                                \
     static const std::string& name() {                                         \
       static const auto name = std::string{__table_name__};                    \
@@ -167,42 +167,41 @@
     }                                                                          \
     static bool evaluate(                                                      \
         const record_type& record,                                             \
-        cpplinq::detail::operators::expression_tree& expression) {            \
-      return cpplinq::detail::operators::evaluate<type>(record, expression);  \
+        cpplinq::detail::operators::expression_tree& expression) {             \
+      return cpplinq::detail::operators::evaluate<type>(record, expression);   \
     }                                                                          \
-    static std::unordered_set<cpplinq::detail::operators::comparison_result>  \
+    static std::unordered_set<cpplinq::detail::operators::comparison_result>   \
     evaluate(const std::string& column_name,                                   \
              const record_type& record,                                        \
              const std::any& value) {                                          \
-      auto result = std::unordered_set<                                        \
-          cpplinq::detail::operators::comparison_result>{};                   \
+      auto result =                                                            \
+          std::unordered_set<cpplinq::detail::operators::comparison_result>{}; \
       invoke(column_name, [&](const auto& trait) {                             \
         const auto& column_value = trait.value(record);                        \
         const auto& op_value = std::any_cast<                                  \
             const typename std::decay_t<decltype(trait)>::column_type&>(       \
             value);                                                            \
-        result =                                                               \
-            cpplinq::detail::operators::evaluate(column_value, op_value);     \
+        result = cpplinq::detail::operators::evaluate(column_value, op_value); \
       });                                                                      \
       return result;                                                           \
     }                                                                          \
   };                                                                           \
   static auto BOOST_PP_CAT(registered_, __table_type__) = []() {               \
     using trait = table_trait<__table_type__, __record_type__,                 \
-                              cpplinq::detail::traits::hash(__table_name__)>; \
-    cpplinq::detail::table_registry::instance().add(                          \
-        __table_name__, cpplinq::detail::traits::any_table{trait{}});         \
-    auto table_def = cpplinq::detail::information_schema::table{              \
+                              cpplinq::detail::traits::hash(__table_name__)>;  \
+    cpplinq::detail::table_registry::instance().add(                           \
+        __table_name__, cpplinq::detail::traits::any_table{trait{}});          \
+    auto table_def = cpplinq::detail::information_schema::table{               \
         .table_name = __table_name__,                                          \
     };                                                                         \
-    cpplinq::detail::information_schema::tables::instance().push(             \
+    cpplinq::detail::information_schema::tables::instance().push_back(         \
         std::move(table_def));                                                 \
     return true;                                                               \
   }();                                                                         \
   using BOOST_PP_CAT(__table_type__, _table_trait) =                           \
       table_trait<__table_type__,                                              \
                   __record_type__,                                             \
-                  cpplinq::detail::traits::hash(__table_name__)>;             \
+                  cpplinq::detail::traits::hash(__table_name__)>;              \
   BOOST_PP_SEQ_FOR_EACH(DECLARE_INDEX,                                         \
                         (BOOST_PP_CAT(__table_type__, _table_trait),           \
                          __table_name__),                                      \
